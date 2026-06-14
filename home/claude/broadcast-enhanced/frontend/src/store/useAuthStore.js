@@ -113,18 +113,7 @@ const useAuthStore = create((set, get) => {
       }
     },
 
-    loginWithOTP: async (email, otp) => {
-      set({ isLoading: true, error: null });
-      try {
-        const { data } = await authService.verifyOTP({ email, otp });
-        get()._persist(data.token, data.user);
-        return { success: true, role: data.user.role };
-      } catch (err) {
-        const message = err.response?.data?.message || "OTP verification failed.";
-        set({ error: message, isLoading: false });
-        return { success: false, message };
-      }
-    },
+
 
     logout: () => {
       localStorage.removeItem(TOKEN_KEY);

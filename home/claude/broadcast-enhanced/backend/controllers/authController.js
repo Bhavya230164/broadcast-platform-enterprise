@@ -181,51 +181,6 @@ export const disable2FA = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-// ── OTP Request (email OTP) ────────────────────────────────────────────────────
-export const requestOTP = async (req, res, next) => {
-  try {
-    const { email } = validate(otpRequestSchema, req.body);
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ success: false, message: "No account with this email." });
-
-    const otp = generateOTP();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 min
-
-    await User.findByIdAndUpdate(user._id, { "otp.code": otp, "otp.expiresAt": expiresAt });
-    
-    try {
-      await sendEmail({ to: email, subject: "Your Login OTP", html: otpEmailHtml(user.name, otp), text: `Your OTP is: ${otp}` });
-    } catch (emailErr) {
-      console.error("\n[OTP ERROR] Failed to send email. Nodemailer Error:", emailErr.message);
-      console.log(`[OTP FALLBACK] The OTP for ${email} is: ${otp}\n`);
-      return res.status(200).json({ success: true, message: "Email failed to send. Error: " + emailErr.message, devOtp: otp });
-    }
-
-    res.status(200).json({ success: true, message: "OTP sent (or logged to server console if email failed)." });
-  } catch (err) { next(err); }
-};
-
-// ── OTP Verify ─────────────────────────────────────────────────────────────────
-export const verifyOTP = async (req, res, next) => {
-  try {
-    const { email, otp } = validate(otpVerifySchema, req.body);
-    const user = await User.findOne({ email }).select("+otp.code +otp.expiresAt");
-    if (!user) return res.status(404).json({ success: false, message: "No account found." });
-    if (!user.otp?.code || user.otp.code !== otp) return res.status(401).json({ success: false, message: "Invalid OTP." });
-    if (new Date() > new Date(user.otp.expiresAt)) return res.status(401).json({ success: false, message: "OTP has expired." });
-
-    // Clear OTP after use
-    await User.findByIdAndUpdate(user._id, { "otp.code": null, "otp.expiresAt": null });
-
-    const token = signToken(user);
-    res.status(200).json({
-      success: true,
-      message: "OTP verified. Login successful.",
-      token,
-      user: { _id: user._id, name: user.name, email: user.email, role: user.role, avatar: user.avatar, preferences: user.preferences },
-    });
-  } catch (err) { next(err); }
-};
 
 // ── Forgot Password ────────────────────────────────────────────────────────────
 export const forgotPassword = async (req, res, next) => {

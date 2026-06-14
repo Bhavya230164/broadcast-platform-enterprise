@@ -17,14 +17,6 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Password is required."),
 });
 
-export const otpRequestSchema = z.object({
-  email: z.string().trim().toLowerCase().email("Valid email required."),
-});
-
-export const otpVerifySchema = z.object({
-  email: z.string().trim().toLowerCase().email(),
-  otp: z.string().length(6, "OTP must be 6 digits.").regex(/^\d+$/, "OTP must be numeric."),
-});
 
 export const forgotPasswordSchema = z.object({
   email: z.string().trim().toLowerCase().email(),

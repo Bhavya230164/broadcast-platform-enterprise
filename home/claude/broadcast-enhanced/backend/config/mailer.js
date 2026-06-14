@@ -44,17 +44,6 @@ export const sendEmail = async ({ to, subject, html, text }) => {
   return info;
 };
 
-/** OTP email template */
-export const otpEmailHtml = (name, otp) => `
-  <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#f9f9f9;border-radius:8px;">
-    <h2 style="color:#1a1a1a;margin-bottom:8px;">Your Login OTP</h2>
-    <p style="color:#555;margin-bottom:24px;">Hi ${name}, use the code below to sign in. It expires in <strong>10 minutes</strong>.</p>
-    <div style="background:#fff;border:2px solid #e0e0e0;border-radius:8px;padding:24px;text-align:center;">
-      <span style="font-size:36px;font-weight:700;letter-spacing:12px;color:#111;">${otp}</span>
-    </div>
-    <p style="color:#999;font-size:12px;margin-top:24px;">If you didn't request this, please ignore this email.</p>
-  </div>
-`;
 
 /** Password reset email template */
 export const resetEmailHtml = (name, resetUrl) => `

@@ -10,13 +10,11 @@ import toast from "react-hot-toast";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login, loginWithOTP, isLoading, isAuthenticated, user, clearError } = useAuthStore();
+  const { login, isLoading, isAuthenticated, user, clearError } = useAuthStore();
 
-  // 'password' | 'otp' | '2fa'
+  // 'password' | '2fa'
   const [tab, setTab] = useState("password");
-  const [form, setForm] = useState({ email: "", password: "", otp: "", totpToken: "" });
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpLoading, setOtpLoading] = useState(false);
+  const [form, setForm] = useState({ email: "", password: "", totpToken: "" });
   const [tempToken, setTempToken] = useState(null); // for 2FA flow
 
   useEffect(() => {
@@ -43,43 +41,7 @@ export default function LoginPage() {
     }
   };
 
-  // ── OTP flow ───────────────────────────────────────────────────────────────
-  const handleRequestOTP = async () => {
-  if (!form.email) return toast.error("Enter your email first.");
 
-  setOtpLoading(true);
-
-  try {
-    const response = await authService.requestOTP(form.email);
-
-    console.log("OTP SUCCESS:", response.data);
-
-    setOtpSent(true);
-    toast.success("OTP sent to your email!");
-  } catch (err) {
-    console.log("OTP ERROR:", err);
-    console.log("STATUS:", err?.response?.status);
-    console.log("DATA:", err?.response?.data);
-
-    toast.error(err?.response?.data?.message || "Failed to send OTP.");
-  } finally {
-    setOtpLoading(false);
-  }
-};
-
-  const handleOTPLogin = async (e) => {
-    e.preventDefault();
-    if (!form.email || !form.otp) return toast.error("Enter both email and OTP.");
-    
-    const res = await loginWithOTP(form.email, form.otp);
-    
-    if (res.success) {
-      toast.success("Welcome back!");
-      navigate(res.role === "admin" ? "/admin" : "/dashboard", { replace: true });
-    } else {
-      toast.error(res.message);
-    }
-  };
 
   // ── 2FA verification ───────────────────────────────────────────────────────
   const handle2FAVerify = async (e) => {
@@ -135,17 +97,7 @@ export default function LoginPage() {
             <p className="text-slate-500 dark:text-slate-400 text-sm">Choose how you'd like to sign in.</p>
           </div>
 
-          {/* Tab switcher — only show when not in 2FA step */}
-          {tab !== "2fa" && (
-            <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl mb-6">
-              {[["password", "Password"], ["otp", "Email OTP"]].map(([key, label]) => (
-                <button key={key} onClick={() => { setTab(key); setOtpSent(false); clearError(); }}
-                  className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${tab === key ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-700"}`}>
-                  {label}
-                </button>
-              ))}
-            </div>
-          )}
+
 
           {/* ── Password form ── */}
           {tab === "password" && (
@@ -169,37 +121,7 @@ export default function LoginPage() {
             </form>
           )}
 
-          {/* ── OTP form ── */}
-          {tab === "otp" && (
-            <form onSubmit={handleOTPLogin} className="space-y-4">
-              <div>
-                <label className="label">Email address</label>
-                <div className="flex gap-2">
-                  <input type="email" value={form.email} onChange={(e) => set("email", e.target.value)}
-                    className="input flex-1" placeholder="you@example.com" required />
-                  <button type="button" onClick={handleRequestOTP} disabled={otpLoading || otpSent}
-                    className="btn-secondary whitespace-nowrap flex-shrink-0">
-                    {otpLoading ? <Spinner /> : otpSent ? "Sent ✓" : "Send OTP"}
-                  </button>
-                </div>
-              </div>
-              {otpSent && (
-                <div>
-                  <label className="label">6-digit OTP</label>
-                  <input type="text" value={form.otp} onChange={(e) => set("otp", e.target.value.replace(/\D/g, "").slice(0, 6))}
-                    className="input tracking-[0.3em] text-center font-mono text-lg" placeholder="000000" maxLength={6} autoFocus />
-                </div>
-              )}
-              <button type="submit" disabled={isLoading || !otpSent} className="btn-primary w-full h-10">
-                {isLoading ? <Spinner /> : "Verify OTP & Sign in"}
-              </button>
-              {otpSent && (
-                <button type="button" onClick={() => setOtpSent(false)} className="btn-ghost w-full text-sm">
-                  Resend OTP
-                </button>
-              )}
-            </form>
-          )}
+
 
           {/* ── 2FA form ── */}
           {tab === "2fa" && (

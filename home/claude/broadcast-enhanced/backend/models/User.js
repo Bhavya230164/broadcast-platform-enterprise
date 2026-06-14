@@ -51,11 +51,7 @@ const userSchema = new mongoose.Schema(
       qrCodeUrl: { type: String, select: false }, // ephemeral, for setup only
     },
 
-    // ── OTP Login (email-based one-time password) ─────────────────────────────
-    otp: {
-      code: { type: String, select: false },
-      expiresAt: { type: Date, select: false },
-    },
+
 
     // ── Password Reset ─────────────────────────────────────────────────────────
     passwordReset: {
@@ -97,7 +93,6 @@ userSchema.methods.toJSON = function () {
   const obj = this.toObject();
   delete obj.password;
   delete obj.twoFA?.secret;
-  delete obj.otp;
   delete obj.passwordReset;
   return obj;
 };
