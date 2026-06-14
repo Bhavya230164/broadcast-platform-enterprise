@@ -192,9 +192,16 @@ export const requestOTP = async (req, res, next) => {
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 min
 
     await User.findByIdAndUpdate(user._id, { "otp.code": otp, "otp.expiresAt": expiresAt });
-    await sendEmail({ to: email, subject: "Your Login OTP", html: otpEmailHtml(user.name, otp), text: `Your OTP is: ${otp}` });
+    
+    try {
+      await sendEmail({ to: email, subject: "Your Login OTP", html: otpEmailHtml(user.name, otp), text: `Your OTP is: ${otp}` });
+    } catch (emailErr) {
+      console.error("\n[OTP ERROR] Failed to send email. Nodemailer Error:", emailErr.message);
+      console.log(`[OTP FALLBACK] The OTP for ${email} is: ${otp}\n`);
+      // We do not throw the error here so the frontend can still proceed to the OTP entry screen.
+    }
 
-    res.status(200).json({ success: true, message: "OTP sent to your email. Valid for 10 minutes." });
+    res.status(200).json({ success: true, message: "OTP sent (or logged to server console if email failed)." });
   } catch (err) { next(err); }
 };
 
