@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Broadcast Platform Enterprise</string>
+    <string name="title_activity_main">Broadcast Platform Enterprise</string>
+    <string name="package_name">com.broadcast.enterprise</string>
+    <string name="custom_url_scheme">com.broadcast.enterprise</string>
+</resources>

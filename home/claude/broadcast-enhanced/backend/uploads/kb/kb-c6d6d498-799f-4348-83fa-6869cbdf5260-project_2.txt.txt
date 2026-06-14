@@ -1,0 +1,51 @@
+                                                     Algorithm: Student Assignment Management System
+Step 1: Start
+Step 2: Initialize System
+Create database (or data structures) for:
+Students
+Teachers
+Assignments
+Submissions
+Step 3: User Login
+Input: Username and Password
+If credentials are valid:
+Allow access
+Else:
+Display “Invalid Login” and retry
+Step 4: Identify User Role
+If user = Teacher, go to Teacher Module
+If user = Student, go to Student Module
+Teacher Module
+Step 5: Create Assignment
+Input assignment details:
+Title
+Description
+Deadline
+Store assignment in database
+Display confirmation
+Step 6: View Submissions
+Select assignment
+Fetch all student submissions
+Display list
+Step 7: Evaluate Assignment
+Select student submission
+Assign marks/grade
+Add feedback
+Update database
+Student Module
+Step 8: View Assignments
+Fetch available assignments
+Display assignment list
+Step 9: Submit Assignment
+Select assignment
+Upload file / enter content
+Save submission with:
+Student ID
+Timestamp
+Display submission success
+Step 10: View Results
+Fetch graded assignments
+Display marks and feedback
+Step 11: Logout
+End user session
+Step 12: Stop

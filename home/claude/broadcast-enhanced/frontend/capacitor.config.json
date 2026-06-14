@@ -1,0 +1,8 @@
+{
+  "appId": "com.broadcast.enterprise",
+  "appName": "Broadcast Platform Enterprise",
+  "webDir": "dist",
+  "server": {
+    "cleartext": true
+  }
+}
