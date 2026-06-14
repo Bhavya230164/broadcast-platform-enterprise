@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { useSocket } from "../../context/SocketContext";
 import useAuthStore from "../../store/useAuthStore";
 import usePrivateChatStore from "../../store/usePrivateChatStore";
@@ -10,6 +11,7 @@ import toast from "react-hot-toast";
 const API_BASE = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
 
 export default function PrivateChatPage() {
+  const navigate = useNavigate();
   const { user } = useAuthStore();
   const { socket, isConnected } = useSocket();
   const { 
@@ -140,12 +142,17 @@ export default function PrivateChatPage() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-56px)] bg-slate-50 dark:bg-slate-900 overflow-hidden">
+    <div className="flex h-[calc(100dvh-56px)] bg-slate-50 dark:bg-slate-900 overflow-hidden">
       {/* Sidebar */}
-      <div className={`w-full sm:w-80 md:w-96 flex flex-col border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 ${activeChatUser ? 'hidden sm:flex' : 'flex'}`}>
-        <div className="p-4 border-b border-slate-200 dark:border-slate-700">
-          <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Private Chat</h2>
-          <p className="text-xs text-slate-500">{user?.role === "admin" ? "All Users" : "Admins Support"}</p>
+      <div className={`w-full md:w-80 lg:w-96 flex flex-col border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 ${activeChatUser ? 'hidden md:flex' : 'flex'}`}>
+        <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2">
+          <button onClick={() => navigate(user?.role === "admin" ? "/admin" : "/dashboard")} className="text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 p-2 rounded-full -ml-2 transition-colors">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+          </button>
+          <div>
+            <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Private Chat</h2>
+            <p className="text-xs text-slate-500">{user?.role === "admin" ? "All Users" : "Admins Support"}</p>
+          </div>
         </div>
         
         <div className="flex-1 overflow-y-auto">
@@ -200,7 +207,7 @@ export default function PrivateChatPage() {
             <div className="flex items-center gap-3">
               <button 
                 onClick={() => setActiveChatUser(null)}
-                className="sm:hidden text-slate-500"
+                className="md:hidden text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 p-2 rounded-full -ml-2 transition-colors"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
               </button>

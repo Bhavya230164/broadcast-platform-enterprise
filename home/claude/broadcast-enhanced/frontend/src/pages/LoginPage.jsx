@@ -54,8 +54,6 @@ export default function LoginPage() {
 
     console.log("OTP SUCCESS:", response.data);
 
-    alert(JSON.stringify(response.data, null, 2));
-
     setOtpSent(true);
     toast.success("OTP sent to your email!");
   } catch (err) {
@@ -63,23 +61,25 @@ export default function LoginPage() {
     console.log("STATUS:", err?.response?.status);
     console.log("DATA:", err?.response?.data);
 
-    alert(
-      JSON.stringify(
-        {
-          status: err?.response?.status,
-          data: err?.response?.data,
-          message: err?.message,
-        },
-        null,
-        2
-      )
-    );
-
     toast.error(err?.response?.data?.message || "Failed to send OTP.");
   } finally {
     setOtpLoading(false);
   }
 };
+
+  const handleOTPLogin = async (e) => {
+    e.preventDefault();
+    if (!form.email || !form.otp) return toast.error("Enter both email and OTP.");
+    
+    const res = await loginWithOTP(form.email, form.otp);
+    
+    if (res.success) {
+      toast.success("Welcome back!");
+      navigate(res.role === "admin" ? "/admin" : "/dashboard", { replace: true });
+    } else {
+      toast.error(res.message);
+    }
+  };
 
   // ── 2FA verification ───────────────────────────────────────────────────────
   const handle2FAVerify = async (e) => {
