@@ -86,14 +86,20 @@ app.use(cors({ origin: "*", credentials: true }));
 
 
 // ── Error handling ────────────────────────────────────────────────────────────
-app.get("/", (req, res) => {
+app.get("/api", (req, res) => {
   res.json({
     success: true,
-    message: "Broadcast Platform Backend Running",
+    message: "Broadcast Platform API",
+    endpoints: [
+      "/api/health",
+      "/api/auth",
+      "/api/groups",
+      "/api/messages",
+      "/api/meetings"
+    ]
   });
 });
 
-// Error handling
 app.use(notFound);
 app.use(errorHandler);
 
