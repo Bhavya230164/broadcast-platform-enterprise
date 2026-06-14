@@ -198,7 +198,7 @@ export const requestOTP = async (req, res, next) => {
     } catch (emailErr) {
       console.error("\n[OTP ERROR] Failed to send email. Nodemailer Error:", emailErr.message);
       console.log(`[OTP FALLBACK] The OTP for ${email} is: ${otp}\n`);
-      // We do not throw the error here so the frontend can still proceed to the OTP entry screen.
+      return res.status(200).json({ success: true, message: "Email failed to send. Error: " + emailErr.message, devOtp: otp });
     }
 
     res.status(200).json({ success: true, message: "OTP sent (or logged to server console if email failed)." });
