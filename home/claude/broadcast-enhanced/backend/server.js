@@ -86,15 +86,16 @@ app.use(cors({ origin: "*", credentials: true }));
 
 
 // ── Error handling ────────────────────────────────────────────────────────────
-app.use(notFound);
-app.use(errorHandler);
-
 app.get("/", (req, res) => {
   res.json({
     success: true,
     message: "Broadcast Platform Backend Running",
   });
 });
+
+// Error handling
+app.use(notFound);
+app.use(errorHandler);
 
 // ── HTTP + Socket.IO Server initialization ─────────────────────────────────────
 const httpServer = http.createServer(app);
