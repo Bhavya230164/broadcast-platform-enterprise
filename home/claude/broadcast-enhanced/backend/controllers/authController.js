@@ -8,13 +8,11 @@ import speakeasy from "speakeasy";
 import qrcode from "qrcode";
 import User from "../models/User.js";
 import {
-  registerSchema, loginSchema, otpRequestSchema, otpVerifySchema,
+  registerSchema, loginSchema,
   forgotPasswordSchema, resetPasswordSchema, verify2FASchema,
   changePasswordSchema, validate,
 } from "../config/validation.js";
-import {
-  sendEmail, otpEmailHtml, resetEmailHtml,
-} from "../config/mailer.js";
+
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 const signToken = (user) =>

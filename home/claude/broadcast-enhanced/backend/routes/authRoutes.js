@@ -1,6 +1,7 @@
 import express from "express";
+import {
   register, login, getMe, verify2FA, setup2FA, enable2FA, disable2FA,
-  forgotPassword, resetPassword, changePassword,
+   forgotPassword, resetPassword, changePassword,
 } from "../controllers/authController.js";
 import { protect } from "../middlewares/authMiddleware.js";
 
@@ -10,7 +11,6 @@ const router = express.Router();
 router.post("/register", register);
 router.post("/login", login);
 router.post("/verify-2fa", verify2FA);
-
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 
