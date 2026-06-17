@@ -26,7 +26,7 @@ export default function RealtimeNotifications() {
       const senderId = message.senderId?._id || message.senderId;
       const preview = message.content || (message.attachments?.length ? "Attachment received" : "");
 
-      if (location.pathname !== "/private-chat" && (!activeChatUser || activeChatUser._id !== senderId)) {
+      if (!["/private-chat", "/chats"].includes(location.pathname) && (!activeChatUser || activeChatUser._id !== senderId)) {
         receiveMessage(message);
       }
 
@@ -36,7 +36,7 @@ export default function RealtimeNotifications() {
             type="button"
             onClick={() => {
               toast.dismiss(t.id);
-              navigate("/private-chat");
+              navigate("/chats");
             }}
             className="text-left"
           >

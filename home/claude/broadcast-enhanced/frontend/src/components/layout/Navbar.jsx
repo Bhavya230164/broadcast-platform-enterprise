@@ -29,7 +29,6 @@ const ENTERPRISE_LINKS = [
   { to: "/tasks",          label: "Tasks",          icon: "📋" },
   { to: "/leadership",     label: "Leadership",     icon: "🏢" },
   { to: "/polls",          label: "Polls",          icon: "📊" },
-  { to: "/private-chat",   label: "Private Chat",   icon: "💬" },
   { to: "/call-history",   label: "Call History",   icon: "📞" },
 ];
 

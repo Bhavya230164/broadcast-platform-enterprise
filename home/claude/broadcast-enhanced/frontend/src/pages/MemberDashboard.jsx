@@ -194,7 +194,7 @@ const MeetingCard = ({ meeting, onJoin }) => {
 };
 
 // ── Main MemberDashboard ───────────────────────────────────────────────────────
-export default function MemberDashboard() {
+export default function MemberDashboard({ initialTab = "inbox" }) {
   const { user } = useAuthStore();
   const { socket, isConnected } = useSocket();
 
@@ -206,7 +206,11 @@ export default function MemberDashboard() {
   const [loadingMessages, setLoadingMessages] = useState(true);
   const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
   const [loadingMore, setLoadingMore] = useState(false);
-  const [activeTab, setActiveTab] = useState("inbox");
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
   const [priorityFilter, setPriorityFilter] = useState("all");
   const newIdTimers = useRef({});
 
@@ -408,7 +412,7 @@ export default function MemberDashboard() {
 
         {/* Tabs */}
         <div className="flex gap-1 mb-6 border-b border-slate-200 dark:border-slate-700">
-          {["inbox", "pinned", "meetings", "notifications"].map((t) => (
+          {["inbox", "pinned", "notifications"].map((t) => (
             <button key={t} onClick={() => setActiveTab(t)}
               className={`px-4 py-2 text-sm font-medium capitalize border-b-2 -mb-px transition-colors ${
                 activeTab === t ? "border-brand-500 text-brand-600 dark:text-brand-400" : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"

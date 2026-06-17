@@ -26,6 +26,9 @@ import PrivateChatPage from "./pages/enterprise/PrivateChatPage";
 import CallOverlay from "./components/chat/CallOverlay";
 import CallHistoryPage from "./pages/enterprise/CallHistoryPage";
 import RealtimeNotifications from "./components/notifications/RealtimeNotifications";
+import BottomNav from "./components/layout/BottomNav";
+import MeetingsPage from "./pages/MeetingsPage";
+import CalendarPage from "./pages/CalendarPage";
 
 // ── Route guards ──────────────────────────────────────────────────────────────
 const ProtectedRoute = ({ children, requiredRole }) => {
@@ -39,7 +42,12 @@ const ProtectedRoute = ({ children, requiredRole }) => {
 const RootRedirect = () => {
   const { isAuthenticated, user } = useAuthStore();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  return <Navigate to={user?.role === "admin" ? "/admin" : "/dashboard"} replace />;
+  return <Navigate to="/home" replace />;
+};
+
+const HomeRoute = () => {
+  const { user } = useAuthStore();
+  return user?.role === "admin" ? <AdminDashboard /> : <MemberDashboard initialTab="inbox" />;
 };
 
 export default function App() {
@@ -47,6 +55,7 @@ export default function App() {
     <>
       <RealtimeNotifications />
       <CallOverlay />
+      <BottomNav />
       <Routes>
         {/* Public */}
       <Route path="/login" element={<LoginPage />} />
@@ -55,8 +64,12 @@ export default function App() {
       <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       {/* Existing protected */}
+      <Route path="/home" element={<ProtectedRoute><HomeRoute /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
-      <Route path="/dashboard" element={<ProtectedRoute requiredRole="member"><MemberDashboard /></ProtectedRoute>} />
+      <Route path="/dashboard" element={<ProtectedRoute requiredRole="member"><MemberDashboard initialTab="inbox" /></ProtectedRoute>} />
+      <Route path="/chats" element={<ProtectedRoute><PrivateChatPage /></ProtectedRoute>} />
+      <Route path="/meetings" element={<ProtectedRoute><MeetingsPage /></ProtectedRoute>} />
+      <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
       <Route path="/2fa-setup" element={<ProtectedRoute><TwoFASetupPage /></ProtectedRoute>} />
       

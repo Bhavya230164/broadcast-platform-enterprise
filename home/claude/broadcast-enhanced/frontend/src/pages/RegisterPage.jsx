@@ -74,25 +74,10 @@ export default function RegisterPage() {
               className="input" placeholder="Min. 6 characters" autoComplete="new-password" required/>
           </div>
 
-          {/* Role selector */}
+          {/* Account type info */}
           <div>
-            <label className="label">Account type</label>
-            <div className="grid grid-cols-2 gap-2">
-              {["member", "admin"].map((r) => (
-                <button key={r} type="button" onClick={() => set("role", r)}
-                  className={`py-2.5 px-3 rounded-xl border text-sm font-medium capitalize transition-all ${
-                    form.role === r
-                      ? "bg-brand-600 text-white border-brand-600"
-                      : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-brand-300"
-                  }`}>
-                  {r}
-                </button>
-              ))}
-            </div>
-            <p className="mt-1.5 text-xs text-slate-400 dark:text-slate-500">
-              {form.role === "admin"
-                ? "Admins create groups and broadcast messages."
-                : "Members receive messages from the Admin."}
+            <p className="text-xs text-slate-400 dark:text-slate-500">
+              You will be registered as a <span className="font-medium text-slate-600 dark:text-slate-300">Member</span>. Members receive messages from the Admin.
             </p>
           </div>
 

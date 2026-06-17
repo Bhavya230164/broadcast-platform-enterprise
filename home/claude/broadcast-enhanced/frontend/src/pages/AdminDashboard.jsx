@@ -647,7 +647,7 @@ export default function AdminDashboard() {
     } catch {}
   };
 
-  const tabs = ["groups", "members", "meetings", "notifications"];
+  const tabs = ["groups", "members", "notifications"];
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">

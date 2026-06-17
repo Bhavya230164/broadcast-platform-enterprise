@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import Navbar from "../../components/layout/Navbar";
 import { callService } from "../../services/api";
@@ -13,6 +14,7 @@ const STATUS_STYLES = {
 
 export default function CallHistoryPage() {
   const { user } = useAuthStore();
+  const navigate = useNavigate();
   const [calls, setCalls] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
@@ -48,11 +50,22 @@ export default function CallHistoryPage() {
       <Navbar />
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         <div className="flex items-start justify-between gap-4 flex-wrap mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Call History</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-              {user?.role === "admin" ? "All voice and video calls across the platform." : "Your voice and video call activity."}
-            </p>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              aria-label="Go back"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Call History</h1>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                {user?.role === "admin" ? "All voice and video calls across the platform." : "Your voice and video call activity."}
+              </p>
+            </div>
           </div>
           <div className="flex gap-2 flex-wrap">
             {["all", "voice", "video", "missed", "answered", "rejected", "completed"].map((item) => (

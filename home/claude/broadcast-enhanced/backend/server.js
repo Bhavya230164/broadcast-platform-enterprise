@@ -34,9 +34,30 @@ import callHistoryRoutes from "./routes/callHistoryRoutes.js";
 // Removed conflicting notification import
 
 import { notFound, errorHandler } from "./middlewares/errorMiddleware.js";
+import User from "./models/User.js";
 
 dotenv.config();
 connectDB();
+
+// ── Seed default Admin account ────────────────────────────────────────────────
+const seedDefaultAdmin = async () => {
+  try {
+    const adminEmail = "admin123@gmail.com";
+    const existingAdmin = await User.findOne({ email: adminEmail });
+    if (!existingAdmin) {
+      await User.create({
+        name: "Admin",
+        email: adminEmail,
+        password: "admin321",
+        role: "admin",
+      });
+      console.log("[Seed] Default admin account created (admin123@gmail.com).");
+    }
+  } catch (err) {
+    console.error("[Seed] Error creating default admin:", err.message);
+  }
+};
+seedDefaultAdmin();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

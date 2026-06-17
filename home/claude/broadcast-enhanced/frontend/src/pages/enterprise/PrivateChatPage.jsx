@@ -146,7 +146,7 @@ export default function PrivateChatPage() {
       {/* Sidebar */}
       <div className={`w-full md:w-80 lg:w-96 flex flex-col border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 ${activeChatUser ? 'hidden md:flex' : 'flex'}`}>
         <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2">
-          <button onClick={() => navigate(user?.role === "admin" ? "/admin" : "/dashboard")} className="text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 p-2 rounded-full -ml-2 transition-colors">
+          <button onClick={() => navigate("/home")} className="text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 p-2 rounded-full -ml-2 transition-colors">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
           </button>
           <div>

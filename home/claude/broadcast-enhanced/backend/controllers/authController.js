@@ -29,6 +29,10 @@ const generateOTP = () =>
 export const register = async (req, res, next) => {
   try {
     const data = validate(registerSchema, req.body);
+
+    // Force role to "member" — admin accounts cannot be created via registration
+    data.role = "member";
+
     const exists = await User.findOne({ email: data.email });
     if (exists) return res.status(409).json({ success: false, message: "Email already registered." });
 
