@@ -316,9 +316,9 @@ export default function AnnouncementsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900">
       <Navbar/>
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+      <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 pt-8 pb-24">
         <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">

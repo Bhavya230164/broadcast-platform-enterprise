@@ -142,10 +142,10 @@ export default function PrivateChatPage() {
   };
 
   return (
-    <div className="flex h-[calc(100dvh-56px)] bg-slate-50 dark:bg-slate-900 overflow-hidden">
+    <div className="flex h-[calc(100dvh-64px)] bg-slate-50 dark:bg-slate-900 overflow-hidden">
       {/* Sidebar */}
       <div className={`w-full md:w-80 lg:w-96 flex flex-col border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 ${activeChatUser ? 'hidden md:flex' : 'flex'}`}>
-        <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2">
+        <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2 shrink-0">
           <button onClick={() => navigate("/home")} className="text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 p-2 rounded-full -ml-2 transition-colors">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
           </button>
@@ -201,7 +201,7 @@ export default function PrivateChatPage() {
 
       {/* Main Chat Area */}
       {activeChatUser ? (
-        <div className="flex-1 flex flex-col bg-[#e5ddd5] dark:bg-[#0b141a]">
+        <div className="flex-1 flex flex-col min-h-0 bg-[#e5ddd5] dark:bg-[#0b141a]">
           {/* Header */}
           <div className="h-16 px-4 bg-white dark:bg-slate-800 flex items-center justify-between border-b border-slate-200 dark:border-slate-700">
             <div className="flex items-center gap-3">
@@ -230,7 +230,7 @@ export default function PrivateChatPage() {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3" style={{ backgroundImage: "url('https://transparenttextures.com/patterns/cubes.png')" }}>
+          <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 scroll-smooth" style={{ backgroundImage: "url('https://transparenttextures.com/patterns/cubes.png')" }}>
             {isLoadingMessages ? (
               <div className="text-center p-4 bg-white/50 dark:bg-black/20 rounded-lg mx-auto w-max text-sm">Loading messages...</div>
             ) : (
@@ -274,7 +274,7 @@ export default function PrivateChatPage() {
           </div>
 
           {/* Input Area */}
-          <div className="p-3 bg-[#f0f2f5] dark:bg-[#202c33] flex items-end gap-2">
+          <div className="shrink-0 p-4 bg-[#f0f2f5] dark:bg-[#202c33] flex items-end gap-2 border-t border-slate-200/70 dark:border-slate-700/70">
             <label className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 cursor-pointer transition-colors shrink-0">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
               <input type="file" multiple className="hidden" onChange={handleFileChange} />

@@ -5,7 +5,10 @@
 @layer base {
   *, *::before, *::after { box-sizing: border-box; }
   html { -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
-  body { @apply bg-slate-50 text-slate-800 font-sans dark:bg-slate-900 dark:text-slate-100; min-height: 100vh; transition: background-color 0.3s, color 0.3s; }
+  html, body, #root { min-height: 100%; }
+  body { @apply bg-slate-50 text-slate-800 font-sans dark:bg-slate-900 dark:text-slate-100; margin: 0; min-height: 100dvh; overflow-x: hidden; transition: background-color 0.3s, color 0.3s; }
+  #root { min-height: 100dvh; }
+  main { padding-bottom: calc(5rem + env(safe-area-inset-bottom)); }
 
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { @apply bg-transparent; }

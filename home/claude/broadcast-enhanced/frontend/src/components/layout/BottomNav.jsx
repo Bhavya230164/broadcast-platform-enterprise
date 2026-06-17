@@ -17,9 +17,6 @@ export default function BottomNav() {
 
   return (
     <>
-      {/* Spacer to prevent content from being hidden behind the fixed navbar */}
-      <div className="h-16 pb-safe sm:hidden block"></div>
-
       {/* Fixed Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 z-50 pb-safe sm:hidden block">
         <div className="flex justify-around items-center h-16">

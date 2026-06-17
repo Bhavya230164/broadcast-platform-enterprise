@@ -18,9 +18,9 @@ export default function ForgotPasswordPage() {
     try {
       await authService.forgotPassword(email);
       setSent(true);
-      toast.success("Reset link sent if email is registered.");
+      toast.success("Password reset link has been sent to your email.");
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to send reset link.");
+      toast.error(err.response?.data?.message || "Unable to send reset email. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -47,6 +47,7 @@ export default function ForgotPasswordPage() {
             <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
               If <strong>{email}</strong> is registered, you'll receive a password reset link shortly.
             </p>
+            <p className="text-sm text-emerald-600 dark:text-emerald-400 mt-3">Password reset link has been sent to your email.</p>
             <Link to="/login" className="btn-primary inline-flex mt-6">Return to login</Link>
           </div>
         ) : (

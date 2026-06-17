@@ -329,6 +329,16 @@ export default function TasksPage() {
 
   useEffect(() => { fetchTasks(); fetchMembers(); }, [fetchTasks, fetchMembers]);
 
+  const handleOpenTask = async (task) => {
+    try {
+      if (!task.hasRead) {
+        await taskService.markRead(task._id);
+        setTasks((p) => p.map((item) => item._id === task._id ? { ...item, hasRead: true } : item));
+      }
+    } catch {}
+    setUpdateTask(task);
+  };
+
   // Real-time: new task assigned (member side)
   useEffect(() => {
     if (!socket || isAdmin) return;
@@ -373,9 +383,9 @@ export default function TasksPage() {
   const filterStatuses = ["", "pending", "in_progress", "completed", "overdue"];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900">
       <Navbar/>
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+      <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 pt-8 pb-24">
         <div className="flex items-start justify-between mb-8 flex-wrap gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -434,7 +444,7 @@ export default function TasksPage() {
           <div className="space-y-3">
             {tasks.map((t) => (
               <TaskCard key={t._id} task={t} isAdmin={isAdmin}
-                onUpdate={setUpdateTask} onDelete={handleDelete}/>
+                onUpdate={handleOpenTask} onDelete={handleDelete}/>
             ))}
           </div>
         )}

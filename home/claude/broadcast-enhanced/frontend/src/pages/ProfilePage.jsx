@@ -105,12 +105,45 @@ export default function ProfilePage() {
     } catch { toast.error("Could not update preference."); }
   };
 
+  // ── Broadcast app notifications toggle ──────────────────────────────────────
+  const handleAppNotifToggle = async () => {
+    if (!("Notification" in window)) {
+      return toast.error("This browser does not support desktop notifications.");
+    }
+
+    try {
+      const nextValue = !user?.preferences?.appNotifications;
+      
+      if (nextValue) {
+        if (Notification.permission === "denied") {
+          toast.error("Notifications are blocked by your browser. Please enable them in browser settings.");
+          return;
+        }
+        if (Notification.permission === "default") {
+          const permission = await Notification.requestPermission();
+          if (permission !== "granted") {
+            toast.error("Permission not granted. Notifications remain disabled.");
+            return;
+          }
+        }
+      }
+
+      const updatedPrefs = { ...user?.preferences, appNotifications: nextValue };
+      await profileService.update({ preferences: updatedPrefs });
+      updateUser({ ...user, preferences: updatedPrefs });
+      toast.success(nextValue ? "Broadcast App Notifications enabled" : "Broadcast App Notifications disabled");
+    } catch {
+      toast.error("Could not update notification preference.");
+    }
+  };
+
   // ── Email notifications toggle ───────────────────────────────────────────────
   const handleEmailNotifToggle = async () => {
     try {
       const newVal = !user?.preferences?.emailNotifications;
-      await profileService.update({ preferences: { emailNotifications: newVal } });
-      updateUser({ ...user, preferences: { ...user?.preferences, emailNotifications: newVal } });
+      const updatedPrefs = { ...user?.preferences, emailNotifications: newVal };
+      await profileService.update({ preferences: updatedPrefs });
+      updateUser({ ...user, preferences: updatedPrefs });
       toast.success(newVal ? "Email notifications on" : "Email notifications off");
     } catch { toast.error("Could not update preference."); }
   };
@@ -131,12 +164,13 @@ export default function ProfilePage() {
   };
 
   const isDark = user?.preferences?.darkMode;
+  const appNotif = user?.preferences?.appNotifications !== false;
   const emailNotif = user?.preferences?.emailNotifications !== false;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900">
       <Navbar />
-      <main className="max-w-2xl mx-auto px-4 py-8 space-y-6 animate-slide-up">
+      <main className="flex-1 max-w-2xl mx-auto w-full px-4 pt-8 pb-28 space-y-6 animate-slide-up">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="btn-ghost btn-icon">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -221,6 +255,15 @@ export default function ProfilePage() {
                 <p className="text-xs text-slate-400 dark:text-slate-500">Switch between light and dark interface.</p>
               </div>
               <Toggle checked={isDark} onChange={handleDarkModeToggle}/>
+            </div>
+            <div className="border-t border-slate-100 dark:border-slate-700"/>
+            {/* App notifications */}
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Broadcast App Notifications</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500">Receive browser notifications for new activity.</p>
+              </div>
+              <Toggle checked={appNotif} onChange={handleAppNotifToggle}/>
             </div>
             <div className="border-t border-slate-100 dark:border-slate-700"/>
             {/* Email notifications */}

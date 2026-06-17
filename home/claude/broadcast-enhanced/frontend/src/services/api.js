@@ -140,6 +140,7 @@ export const taskService = {
   // Member
   getMine: (params) => api.get("/tasks/mine", { params }),
   updateMine: (id, d) => api.patch(`/tasks/${id}/update`, d),
+  markRead: (id) => api.patch(`/tasks/${id}/read`),
 };
 
 // ── Enterprise: Leadership Corner ─────────────────────────────────────────────

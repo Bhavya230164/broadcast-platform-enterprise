@@ -65,28 +65,12 @@ const useAuthStore = create((set, get) => {
       role: data.user.role,
     };
   } catch (err) {
-    console.log("========== LOGIN ERROR ==========");
-    console.log("FULL ERROR:", err);
-    console.log("STATUS:", err?.response?.status);
-    console.log("RESPONSE DATA:", err?.response?.data);
-    console.log("MESSAGE:", err?.message);
-
-    alert(
-      JSON.stringify(
-        {
-          status: err?.response?.status,
-          data: err?.response?.data,
-          message: err?.message,
-        },
-        null,
-        2
-      )
-    );
-
     const message =
-      err?.response?.data?.message ||
+      err?.response?.status === 401
+        ? "Invalid email or password. Please try again."
+        : err?.response?.data?.message ||
       err?.message ||
-      "Login failed.";
+      "Unable to sign in. Please try again.";
 
     set({
       error: message,

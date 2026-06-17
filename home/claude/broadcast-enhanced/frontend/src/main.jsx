@@ -6,10 +6,6 @@ import App from "./App";
 import { SocketProvider } from "./context/SocketContext";
 import "./index.css";
 
-if ("Notification" in window && Notification.permission === "default") {
-  Notification.requestPermission();
-}
-
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>

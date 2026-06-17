@@ -268,6 +268,13 @@ export default function MemberDashboard({ initialTab = "inbox" }) {
   // Re-fetch when filter changes
   useEffect(() => { fetchMessages(1, true); }, [priorityFilter, fetchMessages]);
 
+  useEffect(() => {
+    if (!socket) return;
+    const handleNotificationUpdated = () => fetchNotifications();
+    socket.on("notification_updated", handleNotificationUpdated);
+    return () => socket.off("notification_updated", handleNotificationUpdated);
+  }, [socket, fetchNotifications]);
+
   // ── Socket listeners ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (!socket) return;
@@ -379,11 +386,10 @@ export default function MemberDashboard({ initialTab = "inbox" }) {
   const unreadNotifCount = notifications.filter((n) => !n.isRead).length;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900">
       <Navbar />
 
-
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+      <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 pt-8 pb-24">
         {/* Greeting */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">

@@ -58,34 +58,33 @@ export default function App() {
       <BottomNav />
       <Routes>
         {/* Public */}
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-      <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-      {/* Existing protected */}
-      <Route path="/home" element={<ProtectedRoute><HomeRoute /></ProtectedRoute>} />
-      <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
-      <Route path="/dashboard" element={<ProtectedRoute requiredRole="member"><MemberDashboard initialTab="inbox" /></ProtectedRoute>} />
-      <Route path="/chats" element={<ProtectedRoute><PrivateChatPage /></ProtectedRoute>} />
-      <Route path="/meetings" element={<ProtectedRoute><MeetingsPage /></ProtectedRoute>} />
-      <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
-      <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-      <Route path="/2fa-setup" element={<ProtectedRoute><TwoFASetupPage /></ProtectedRoute>} />
-      
+        {/* Existing protected */}
+        <Route path="/home" element={<ProtectedRoute><HomeRoute /></ProtectedRoute>} />
+        <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/dashboard" element={<ProtectedRoute requiredRole="member"><MemberDashboard initialTab="inbox" /></ProtectedRoute>} />
+        <Route path="/chats" element={<ProtectedRoute><PrivateChatPage /></ProtectedRoute>} />
+        <Route path="/meetings" element={<ProtectedRoute><MeetingsPage /></ProtectedRoute>} />
+        <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+        <Route path="/2fa-setup" element={<ProtectedRoute><TwoFASetupPage /></ProtectedRoute>} />
 
-      {/* Enterprise features — accessible by both roles (pages handle role logic internally) */}
-      <Route path="/announcements" element={<ProtectedRoute><AnnouncementsPage /></ProtectedRoute>} />
-      <Route path="/knowledge-base" element={<ProtectedRoute><KnowledgeBasePage /></ProtectedRoute>} />
-      <Route path="/tasks" element={<ProtectedRoute><TasksPage /></ProtectedRoute>} />
-      <Route path="/leadership" element={<ProtectedRoute><LeadershipPage /></ProtectedRoute>} />
-      <Route path="/polls" element={<ProtectedRoute><PollsPage /></ProtectedRoute>} />
-      <Route path="/private-chat" element={<ProtectedRoute><PrivateChatPage /></ProtectedRoute>} />
-      <Route path="/call-history" element={<ProtectedRoute><CallHistoryPage /></ProtectedRoute>} />
+        {/* Enterprise features — accessible by both roles (pages handle role logic internally) */}
+        <Route path="/announcements" element={<ProtectedRoute><AnnouncementsPage /></ProtectedRoute>} />
+        <Route path="/knowledge-base" element={<ProtectedRoute><KnowledgeBasePage /></ProtectedRoute>} />
+        <Route path="/tasks" element={<ProtectedRoute><TasksPage /></ProtectedRoute>} />
+        <Route path="/leadership" element={<ProtectedRoute><LeadershipPage /></ProtectedRoute>} />
+        <Route path="/polls" element={<ProtectedRoute><PollsPage /></ProtectedRoute>} />
+        <Route path="/private-chat" element={<ProtectedRoute><PrivateChatPage /></ProtectedRoute>} />
+        <Route path="/call-history" element={<ProtectedRoute><CallHistoryPage /></ProtectedRoute>} />
 
-      <Route path="/" element={<RootRedirect />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        <Route path="/" element={<RootRedirect />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
 </>
   );
 }
