@@ -64,6 +64,9 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// Trust the first proxy (Render) to fix rate limiting and protocol detection
+app.set("trust proxy", 1);
+
 // ── Security ──────────────────────────────────────────────────────────────────
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 

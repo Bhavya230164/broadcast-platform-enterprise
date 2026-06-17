@@ -7,7 +7,7 @@ import nodemailer from "nodemailer";
 export const createTransporter = () => {
   const port = parseInt(process.env.EMAIL_PORT) || 465;
   return nodemailer.createTransport({
-    // Use EMAIL_HOST directly from environment variables
+    host: process.env.EMAIL_HOST,
     host: process.env.EMAIL_HOST,
     port: port,
     secure: port === 465, // true for 465, false for other ports
