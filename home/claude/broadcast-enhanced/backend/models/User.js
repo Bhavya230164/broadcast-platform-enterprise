@@ -63,6 +63,7 @@ const userSchema = new mongoose.Schema(
     preferences: {
       darkMode: { type: Boolean, default: false },
       emailNotifications: { type: Boolean, default: true },
+      appNotifications: { type: Boolean, default: true },
     },
   },
   { timestamps: true }

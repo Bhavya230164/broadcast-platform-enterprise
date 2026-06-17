@@ -7,6 +7,11 @@ import crypto from "crypto";
 import speakeasy from "speakeasy";
 import qrcode from "qrcode";
 import User from "../models/User.js";
+import { 
+  sendEmail, 
+  resetEmailHtml, 
+  createTransporter 
+} from "../config/mailer.js";
 import {
   registerSchema, loginSchema,
   forgotPasswordSchema, resetPasswordSchema, verify2FASchema,
@@ -35,6 +40,13 @@ export const register = async (req, res, next) => {
 
     const exists = await User.findOne({ email: data.email });
     if (exists) return res.status(409).json({ success: false, message: "Email already registered." });
+
+    // Set default preferences for new users
+    data.preferences = {
+      darkMode: false,
+      appNotifications: true, // Enable by default at account level
+      emailNotifications: true,
+    };
 
     const user = await User.create(data);
     const token = signToken(user);
@@ -65,7 +77,7 @@ export const login = async (req, res, next) => {
 
       return res.status(401).json({
         success: false,
-        message: "Invalid email or password.",
+        message: "Invalid email or password. Please try again.",
       });
     }
 
@@ -190,7 +202,7 @@ export const forgotPassword = async (req, res, next) => {
     const { email } = validate(forgotPasswordSchema, req.body);
     const user = await User.findOne({ email });
     // Always return success to prevent email enumeration
-    if (!user) return res.status(200).json({ success: true, message: "If that email is registered, a reset link has been sent." });
+    if (!user) return res.status(200).json({ success: true, message: "Password reset link has been sent to your email." });
 
     const resetToken = crypto.randomBytes(32).toString("hex");
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
@@ -200,10 +212,27 @@ export const forgotPassword = async (req, res, next) => {
       "passwordReset.expiresAt": expiresAt,
     });
 
+    // Log the reset token and URL for debugging
+    console.log(`[Auth] Password reset token generated for ${email}: ${resetToken}`);
     const resetUrl = `${process.env.CLIENT_ORIGIN}/reset-password?token=${resetToken}`;
-    await sendEmail({ to: email, subject: "Password Reset Request", html: resetEmailHtml(user.name, resetUrl) });
+    console.log(`[Auth] Password reset URL: ${resetUrl}`);
 
-    res.status(200).json({ success: true, message: "If that email is registered, a reset link has been sent." });
+    try {
+      // Direct call ensures any reference or type errors are caught by the catch block or global handler
+      await sendEmail({
+        to: email,
+        subject: "Password Reset Request",
+        html: resetEmailHtml(user.name, resetUrl)
+      });
+      console.log(`[Auth] Password reset email sent successfully to ${email}`);
+    } catch (mailError) {
+      console.error(`[Auth] Failed to send email via sendEmail function:`, mailError);
+      if (process.env.NODE_ENV !== 'production') {
+        return next(mailError); 
+      }
+    }
+
+    res.status(200).json({ success: true, message: "Password reset link has been sent to your email." });
   } catch (err) { next(err); }
 };
 
@@ -246,6 +275,3 @@ export const getMe = async (req, res, next) => {
     res.status(200).json({ success: true, user });
   } catch (err) { next(err); }
 };
-
-
-

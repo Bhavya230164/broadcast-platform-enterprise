@@ -4,7 +4,7 @@
  */
 import nodemailer from "nodemailer";
 
-const createTransporter = () => {
+export const createTransporter = () => {
   const port = parseInt(process.env.EMAIL_PORT) || 465;
   return nodemailer.createTransport({
     host: process.env.EMAIL_HOST || "smtp.gmail.com",
@@ -26,22 +26,28 @@ const createTransporter = () => {
 export const sendEmail = async ({ to, subject, html, text }) => {
   // In dev without email config, just log
   if (!process.env.EMAIL_USER || process.env.EMAIL_USER === "your_email@gmail.com") {
-    console.log(`\n[Mailer] DEV MODE — Email not sent. Would have sent to: ${to}`);
+    console.log(`\n[Mailer] DEV MODE — Email not sent. To enable email sending, please configure EMAIL_USER and EMAIL_PASS in your .env file. Would have sent to: ${to}`);
     console.log(`[Mailer] Subject: ${subject}`);
     console.log(`[Mailer] Text: ${text || "(html only)"}\n`);
-    return { messageId: "dev-mode" };
+    return { messageId: "dev-mode-email-not-configured" };
   }
 
   const transporter = createTransporter();
-  const info = await transporter.sendMail({
-    from: process.env.EMAIL_FROM || `"Broadcast Platform" <no-reply@broadcast.app>`,
-    to,
-    subject,
-    text,
-    html,
-  });
-  console.log(`[Mailer] Sent: ${info.messageId} → ${to}`);
-  return info;
+  
+  try {
+    const info = await transporter.sendMail({
+      from: process.env.EMAIL_FROM || `"Broadcast Platform" <${process.env.EMAIL_USER}>`,
+      to,
+      subject,
+      text,
+      html,
+    });
+    console.log(`[Mailer] Email sent successfully: ${info.messageId} → ${to}`);
+    return info;
+  } catch (error) {
+    console.error(`[Mailer] Error occurred while sending email to ${to}:`, error.message);
+    throw error; // Re-throw to be handled by the controller
+  }
 };
 
 

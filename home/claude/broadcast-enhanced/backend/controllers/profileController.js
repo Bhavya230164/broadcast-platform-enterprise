@@ -25,6 +25,7 @@ export const updateProfile = async (req, res, next) => {
     if (data.preferences) {
       if (data.preferences.darkMode !== undefined) updateFields["preferences.darkMode"] = data.preferences.darkMode;
       if (data.preferences.emailNotifications !== undefined) updateFields["preferences.emailNotifications"] = data.preferences.emailNotifications;
+      if (data.preferences.appNotifications !== undefined) updateFields["preferences.appNotifications"] = data.preferences.appNotifications;
     }
 
     const user = await User.findByIdAndUpdate(req.user._id, { $set: updateFields }, { new: true, runValidators: true });

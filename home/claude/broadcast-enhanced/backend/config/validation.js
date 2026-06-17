@@ -86,6 +86,7 @@ export const updateProfileSchema = z.object({
     .object({
       darkMode: z.boolean().optional(),
       emailNotifications: z.boolean().optional(),
+      appNotifications: z.boolean().optional(),
     })
     .optional(),
 });

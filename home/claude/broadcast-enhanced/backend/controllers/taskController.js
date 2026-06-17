@@ -45,6 +45,14 @@ const computeStatus = (task) => {
   return task.status;
 };
 
+const markRelatedNotificationsRead = async (userId, taskId) => {
+  const result = await Notification.updateMany(
+    { userId, refModel: "Task", refId: taskId, isRead: false },
+    { $set: { isRead: true } }
+  );
+  return result.modifiedCount || 0;
+};
+
 // ── Admin: Create task ────────────────────────────────────────────────────────
 export const createTask = async (req, res, next) => {
   try {
@@ -158,6 +166,15 @@ export const getAllTasks = async (req, res, next) => {
       Task.countDocuments(filter),
     ]);
 
+    const userId = req.user._id.toString();
+    const shapedTasks = tasks.map((task) => {
+      const raw = task.toObject();
+      const hasRead = Array.isArray(raw.readBy)
+        ? raw.readBy.some((entry) => entry.userId?.toString() === userId)
+        : false;
+      return { ...raw, hasRead, effectiveStatus: computeStatus(raw) };
+    });
+
     // Summary stats
     const stats = await Task.aggregate([
       { $match: { isDeleted: false } },
@@ -165,7 +182,7 @@ export const getAllTasks = async (req, res, next) => {
     ]);
     const summary = stats.reduce((acc, s) => { acc[s._id] = s.count; return acc; }, {});
 
-    res.status(200).json({ success: true, total, page: parseInt(page), pages: Math.ceil(total / lim), summary, tasks });
+    res.status(200).json({ success: true, total, page: parseInt(page), pages: Math.ceil(total / lim), summary, tasks: shapedTasks });
   } catch (err) {
     next(err);
   }
@@ -188,10 +205,49 @@ export const getMyTasks = async (req, res, next) => {
       .populate("assignedBy", "name")
       .sort({ dueDate: 1, priority: -1 });
 
-    const summary = { pending: 0, in_progress: 0, completed: 0, overdue: 0 };
-    tasks.forEach((t) => { if (summary[t.status] !== undefined) summary[t.status]++; });
+    const userId = req.user._id.toString();
+    const shapedTasks = tasks.map((task) => {
+      const raw = task.toObject();
+      const hasRead = Array.isArray(raw.readBy)
+        ? raw.readBy.some((entry) => entry.userId?.toString() === userId)
+        : false;
+      return { ...raw, hasRead, effectiveStatus: computeStatus(raw) };
+    });
 
-    res.status(200).json({ success: true, count: tasks.length, summary, tasks });
+    const summary = { pending: 0, in_progress: 0, completed: 0, overdue: 0 };
+    shapedTasks.forEach((t) => { if (summary[t.status] !== undefined) summary[t.status]++; });
+
+    res.status(200).json({ success: true, count: shapedTasks.length, summary, tasks: shapedTasks });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ── Member: Mark task as read ────────────────────────────────────────────────
+export const markTaskRead = async (req, res, next) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id))
+      return res.status(400).json({ success: false, message: "Invalid ID." });
+
+    const task = await Task.findOne({ _id: req.params.id, assignedTo: req.user._id, isDeleted: false });
+    if (!task) return res.status(404).json({ success: false, message: "Task not found or not assigned to you." });
+
+    const alreadyRead = task.readBy?.some((entry) => entry.userId?.toString() === req.user._id.toString());
+    if (!alreadyRead) {
+      await Task.findByIdAndUpdate(task._id, {
+        $push: { readBy: { userId: req.user._id, readAt: new Date() } },
+      });
+
+      const unreadNotificationsCleared = await markRelatedNotificationsRead(req.user._id, task._id);
+      getIO().to(req.user._id.toString()).emit("notification_updated", {
+        refModel: "Task",
+        refId: task._id,
+        isRead: true,
+        unreadNotificationsCleared,
+      });
+    }
+
+    res.status(200).json({ success: true, message: "Task marked as read." });
   } catch (err) {
     next(err);
   }

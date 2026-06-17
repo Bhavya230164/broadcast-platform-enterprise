@@ -60,6 +60,14 @@ const notifyAllMembers = async (announcement, io) => {
   });
 };
 
+const markRelatedNotificationsRead = async (userId, announcementId) => {
+  const result = await Notification.updateMany(
+    { userId, refModel: "Announcement", refId: announcementId, isRead: false },
+    { $set: { isRead: true } }
+  );
+  return result.modifiedCount || 0;
+};
+
 // ── Admin: Create ──────────────────────────────────────────────────────────────
 export const createAnnouncement = async (req, res, next) => {
   try {
@@ -225,6 +233,13 @@ export const markAnnouncementRead = async (req, res, next) => {
 
     await Announcement.findByIdAndUpdate(req.params.id, {
       $push: { readBy: { userId: req.user._id, readAt: new Date() } },
+    });
+    const unreadNotificationsCleared = await markRelatedNotificationsRead(req.user._id, req.params.id);
+    getIO().to(req.user._id.toString()).emit("notification_updated", {
+      refModel: "Announcement",
+      refId: req.params.id,
+      isRead: true,
+      unreadNotificationsCleared,
     });
     res.status(200).json({ success: true, message: "Marked as read." });
   } catch (err) {

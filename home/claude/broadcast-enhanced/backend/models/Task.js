@@ -59,6 +59,13 @@ const taskSchema = new mongoose.Schema(
       maxlength: [1000, "Notes cannot exceed 1000 characters."],
       default: "",
     },
+    readBy: [
+      {
+        userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        readAt: { type: Date, default: Date.now },
+        _id: false,
+      },
+    ],
     // Reminder sent flags
     reminderSent24h: { type: Boolean, default: false },
     reminderSent1h: { type: Boolean, default: false },

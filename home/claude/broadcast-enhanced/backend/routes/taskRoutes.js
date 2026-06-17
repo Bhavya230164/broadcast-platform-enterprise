@@ -1,7 +1,7 @@
 import express from "express";
 import {
   createTask, updateTask, deleteTask, getAllTasks,
-  getMyTasks, updateMyTask,
+  getMyTasks, updateMyTask, markTaskRead,
 } from "../controllers/taskController.js";
 import { protect, adminOnly, memberOnly } from "../middlewares/authMiddleware.js";
 
@@ -16,6 +16,7 @@ router.delete("/:id", adminOnly, deleteTask);
 
 // Member
 router.get("/mine", memberOnly, getMyTasks);
+router.patch("/:id/read", memberOnly, markTaskRead);
 router.patch("/:id/update", memberOnly, updateMyTask);
 
 export default router;
