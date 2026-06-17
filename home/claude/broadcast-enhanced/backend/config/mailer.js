@@ -8,7 +8,6 @@ export const createTransporter = () => {
   const port = parseInt(process.env.EMAIL_PORT) || 465;
   return nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
-    host: process.env.EMAIL_HOST,
     port: port,
     secure: port === 465, // true for 465, false for other ports
     connectionTimeout: 10000, // 10 seconds max wait

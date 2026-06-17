@@ -105,10 +105,6 @@ app.use("/api/polls", pollRoutes);
 app.use("/api/private-messages", privateMessageRoutes);
 app.use("/api/call-history", callHistoryRoutes);
 
-// Removed conflicting notification route usage
-app.use(cors({ origin: "*", credentials: true }));
-
-
 // ── Error handling ────────────────────────────────────────────────────────────
 app.get("/api", (req, res) => {
   res.json({
