@@ -7,7 +7,8 @@ import nodemailer from "nodemailer";
 export const createTransporter = () => {
   const port = parseInt(process.env.EMAIL_PORT) || 465;
   return nodemailer.createTransport({
-    host: process.env.EMAIL_HOST || "smtp.gmail.com",
+    // Use EMAIL_HOST directly from environment variables
+    host: process.env.EMAIL_HOST,
     port: port,
     secure: port === 465, // true for 465, false for other ports
     connectionTimeout: 10000, // 10 seconds max wait
@@ -35,18 +36,22 @@ export const sendEmail = async ({ to, subject, html, text }) => {
   const transporter = createTransporter();
   
   try {
+    // Verify connection configuration
+    await transporter.verify();
+    console.log("[Mailer] SMTP READY");
+
     const info = await transporter.sendMail({
-      from: process.env.EMAIL_FROM || `"Broadcast Platform" <${process.env.EMAIL_USER}>`,
+      from: process.env.EMAIL_FROM,
       to,
       subject,
       text,
       html,
     });
-    console.log(`[Mailer] Email sent successfully: ${info.messageId} → ${to}`);
+    console.log("Email sent:", info.messageId);
     return info;
   } catch (error) {
-    console.error(`[Mailer] Error occurred while sending email to ${to}:`, error.message);
-    throw error; // Re-throw to be handled by the controller
+    console.error("EMAIL ERROR:", error);
+    throw error;
   }
 };
 
