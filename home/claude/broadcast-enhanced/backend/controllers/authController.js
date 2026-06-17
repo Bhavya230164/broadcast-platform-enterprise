@@ -9,8 +9,7 @@ import qrcode from "qrcode";
 import User from "../models/User.js";
 import { 
   sendEmail, 
-  resetEmailHtml, 
-  createTransporter 
+  resetEmailHtml
 } from "../config/mailer.js";
 import {
   registerSchema, loginSchema,
