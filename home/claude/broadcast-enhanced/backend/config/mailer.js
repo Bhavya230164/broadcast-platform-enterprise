@@ -1,56 +1,37 @@
-/**
- * Nodemailer configuration
- * Used for: OTP login, password reset, meeting reminders
- */
-import nodemailer from "nodemailer";
-
-export const createTransporter = () => {
-  const port = parseInt(process.env.EMAIL_PORT) || 465;
-  return nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: port,
-    secure: port === 465, // true for 465, false for other ports
-    connectionTimeout: 10000, // 10 seconds max wait
-    greetingTimeout: 10000,
-    socketTimeout: 10000,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
-};
+import { Resend } from "resend";
 
 /**
- * Send an email. Falls back to console.log in development if EMAIL_USER is not set.
+ * Send an email using Resend API (HTTPS)
+ * Avoids SMTP port blocking issues on Render/Heroku
  */
 export const sendEmail = async ({ to, subject, html, text }) => {
-  // In dev without email config, just log
-  if (!process.env.EMAIL_USER || process.env.EMAIL_USER === "your_email@gmail.com") {
-    console.log(`\n[Mailer] DEV MODE — Email not sent. To enable email sending, please configure EMAIL_USER and EMAIL_PASS in your .env file. Would have sent to: ${to}`);
-    console.log(`[Mailer] Subject: ${subject}`);
-    console.log(`[Mailer] Text: ${text || "(html only)"}\n`);
-    return { messageId: "dev-mode-email-not-configured" };
+  if (!process.env.RESEND_API_KEY) {
+    console.warn("[Mailer] RESEND_API_KEY missing. Email logged to console instead.");
+    console.log(`[TO]: ${to}\n[SUBJECT]: ${subject}\n[CONTENT]: ${text || "HTML content"}`);
+    return { id: "dev-mode-no-key" };
   }
 
-  const transporter = createTransporter();
+  const resend = new Resend(process.env.RESEND_API_KEY);
   
   try {
-    // Verify connection configuration
-    await transporter.verify();
-    console.log("[Mailer] SMTP READY");
-
-    const info = await transporter.sendMail({
-      from: process.env.EMAIL_FROM,
+    const { data, error } = await resend.emails.send({
+      from: process.env.EMAIL_FROM || "onboarding@resend.dev",
       to,
       subject,
-      text,
       html,
+      text: text || "",
     });
-    console.log("Email sent:", info.messageId);
-    return info;
-  } catch (error) {
-    console.error("EMAIL ERROR:", error);
-    throw error;
+
+    if (error) {
+      console.error("[Resend Error]:", error);
+      throw new Error(error.message);
+    }
+
+    console.log("[Resend Success]:", data.id);
+    return data;
+  } catch (err) {
+    console.error("[Mailer Exception]:", err);
+    throw err;
   }
 };
 

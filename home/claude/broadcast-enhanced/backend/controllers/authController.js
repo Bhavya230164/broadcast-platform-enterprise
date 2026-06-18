@@ -214,24 +214,23 @@ export const forgotPassword = async (req, res, next) => {
     // Log the reset token and URL for debugging
     console.log(`[Auth] Password reset token generated for ${email}: ${resetToken}`);
     const resetUrl = `${process.env.CLIENT_ORIGIN}/reset-password?token=${resetToken}`;
-    console.log(`[Auth] Password reset URL: ${resetUrl}`);
 
     try {
-      // Direct call ensures any reference or type errors are caught by the catch block or global handler
       await sendEmail({
         to: email,
         subject: "Password Reset Request",
         html: resetEmailHtml(user.name, resetUrl)
       });
-      console.log(`[Auth] Password reset email sent successfully to ${email}`);
+      
+      return res.status(200).json({ success: true, message: "Password reset link has been sent to your email." });
     } catch (mailError) {
-      console.error(`[Auth] Failed to send email via sendEmail function:`, mailError);
-      if (process.env.NODE_ENV !== 'production') {
-        return next(mailError); 
-      }
-    }
+  console.error("[EMAIL FAILED]", mailError);
 
-    res.status(200).json({ success: true, message: "Password reset link has been sent to your email." });
+  return res.status(500).json({
+    success: false,
+    message: "Failed to send password reset email. Please try again later."
+  });
+}
   } catch (err) { next(err); }
 };
 
