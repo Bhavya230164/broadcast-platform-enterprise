@@ -5,14 +5,16 @@ import { Resend } from "resend";
  * Avoids SMTP port blocking issues on Render/Heroku
  */
 export const sendEmail = async ({ to, subject, html, text }) => {
+  console.log("=== RESEND MAILER EXECUTED ===");
+  console.log("RESEND_API_KEY exists:", !!process.env.RESEND_API_KEY);
+  console.log("EMAIL_FROM:", process.env.EMAIL_FROM);
+
   if (!process.env.RESEND_API_KEY) {
-    console.warn("[Mailer] RESEND_API_KEY missing. Email logged to console instead.");
-    console.log(`[TO]: ${to}\n[SUBJECT]: ${subject}\n[CONTENT]: ${text || "HTML content"}`);
-    return { id: "dev-mode-no-key" };
+    throw new Error("RESEND_API_KEY is missing in Render environment variables");
   }
 
   const resend = new Resend(process.env.RESEND_API_KEY);
-  
+
   try {
     const { data, error } = await resend.emails.send({
       from: process.env.EMAIL_FROM || "onboarding@resend.dev",
@@ -23,18 +25,17 @@ export const sendEmail = async ({ to, subject, html, text }) => {
     });
 
     if (error) {
-      console.error("[Resend Error]:", error);
-      throw new Error(error.message);
+      console.error("[Resend Error]", error);
+      throw new Error(JSON.stringify(error));
     }
 
-    console.log("[Resend Success]:", data.id);
+    console.log("[Resend Success]", data);
     return data;
   } catch (err) {
-    console.error("[Mailer Exception]:", err);
+    console.error("[Mailer Exception]", err);
     throw err;
   }
 };
-
 
 /** Password reset email template */
 export const resetEmailHtml = (name, resetUrl) => `

@@ -212,16 +212,17 @@ export const forgotPassword = async (req, res, next) => {
     });
 
     // Log the reset token and URL for debugging
-    console.log(`[Auth] Password reset token generated for ${email}: ${resetToken}`);
+    console.log(`[Auth] Password reset token generated for ${email}: ${resetToken}`); // Keep this line as it is
     const resetUrl = `${process.env.CLIENT_ORIGIN}/reset-password?token=${resetToken}`;
-
     try {
+      console.log("[AUTH] Sending reset email to:", email);
+      console.log("[AUTH] Reset URL:", resetUrl);
       await sendEmail({
         to: email,
         subject: "Password Reset Request",
         html: resetEmailHtml(user.name, resetUrl)
       });
-      
+      console.log("[AUTH] Email sent successfully");
       return res.status(200).json({ success: true, message: "Password reset link has been sent to your email." });
     } catch (mailError) {
   console.error("[EMAIL FAILED]", mailError);
@@ -230,7 +231,6 @@ export const forgotPassword = async (req, res, next) => {
     success: false,
     message: "Failed to send password reset email. Please try again later."
   });
-}
   } catch (err) { next(err); }
 };
 
