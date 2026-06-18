@@ -1,9 +1,44 @@
 import { Link, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import useAuthStore from "../../store/useAuthStore";
+import { useSocket } from "../../context/SocketContext";
+import usePrivateChatStore from "../../store/usePrivateChatStore";
 
 export default function BottomNav() {
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
+  const { socket, isConnected } = useSocket();
+  const {
+    unreadTotal,
+    fetchUsers,
+    setChatPageOpen,
+    markMessagesReadByOther,
+    updateUserStatus,
+  } = usePrivateChatStore();
   const location = useLocation();
+
+  useEffect(() => {
+    if (isAuthenticated) fetchUsers();
+  }, [isAuthenticated, fetchUsers]);
+
+  useEffect(() => {
+    setChatPageOpen(location.pathname.startsWith("/chats") || location.pathname.startsWith("/private-chat"));
+  }, [location.pathname, setChatPageOpen]);
+
+  useEffect(() => {
+    if (!socket || !isConnected) return;
+
+    const handleReadReceipt = ({ readerId }) => {
+      markMessagesReadByOther(readerId);
+    };
+
+    socket.on("private_read_receipt", handleReadReceipt);
+    socket.on("user_status_change", updateUserStatus);
+
+    return () => {
+      socket.off("private_read_receipt", handleReadReceipt);
+      socket.off("user_status_change", updateUserStatus);
+    };
+  }, [socket, isConnected, markMessagesReadByOther, updateUserStatus]);
 
   // Hide BottomNav if not authenticated or if we are on pages that shouldn't have it (like login, register)
   if (!isAuthenticated) return null;
@@ -40,7 +75,14 @@ export default function BottomNav() {
                     className="w-6 h-6 object-contain"
                   />
                 ) : (
-                  <span className="text-xl leading-none">{tab.icon}</span>
+                  <span className="relative text-xl leading-none">
+                    {tab.icon}
+                    {tab.name === "Chats" && unreadTotal > 0 && !isActive && (
+                      <span className="absolute -top-2 -right-3 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold leading-[18px] text-center shadow-sm">
+                        {unreadTotal > 99 ? "99+" : unreadTotal}
+                      </span>
+                    )}
+                  </span>
                 )}
                 <span className="text-[10px] font-medium">{tab.name}</span>
               </Link>

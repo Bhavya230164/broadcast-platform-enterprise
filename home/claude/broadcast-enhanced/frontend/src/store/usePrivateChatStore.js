@@ -1,10 +1,21 @@
 import { create } from "zustand";
 import { privateMessageService } from "../services/api";
 
+const getUserId = (value) => {
+  if (!value) return null;
+  if (typeof value === "string") return value;
+  return value._id || value.id || null;
+};
+
+const getUnreadTotal = (users = []) =>
+  users.reduce((total, user) => total + (Number(user.unreadCount) || 0), 0);
+
 const usePrivateChatStore = create((set, get) => ({
   users: [],
   activeChatUser: null,
   messages: [],
+  unreadTotal: 0,
+  isChatPageOpen: false,
   isLoadingUsers: false,
   isLoadingMessages: false,
   error: null,
@@ -13,7 +24,10 @@ const usePrivateChatStore = create((set, get) => ({
     set({ isLoadingUsers: true, error: null });
     try {
       const { data } = await privateMessageService.getUsers();
-      set({ users: data.data || [] });
+      const users = (data.data || []).map((user) =>
+        get().isChatPageOpen ? { ...user, unreadCount: 0 } : user
+      );
+      set({ users, unreadTotal: getUnreadTotal(users) });
     } catch (err) {
       set({ error: err.response?.data?.message || err.message });
     } finally {
@@ -36,6 +50,7 @@ const usePrivateChatStore = create((set, get) => ({
       // Clear unread count for this user
       set((state) => ({
         users: state.users.map((u) => (u._id === userId ? { ...u, unreadCount: 0 } : u)),
+        unreadTotal: getUnreadTotal(state.users.map((u) => (u._id === userId ? { ...u, unreadCount: 0 } : u))),
       }));
       await privateMessageService.markRead(userId);
     } catch (err) {
@@ -61,12 +76,13 @@ const usePrivateChatStore = create((set, get) => ({
 
   receiveMessage: (message) => {
     set((state) => {
-      let isForActiveChat = state.activeChatUser && state.activeChatUser._id === message.senderId._id;
+      const senderId = getUserId(message.senderId);
+      const isForActiveChat = state.isChatPageOpen && state.activeChatUser && state.activeChatUser._id === senderId;
       
       const newMessages = isForActiveChat ? [...state.messages, message] : state.messages;
       
       const newUsers = state.users.map((u) => {
-        if (u._id === message.senderId._id) {
+        if (u._id === senderId) {
           return {
             ...u,
             latestMessage: message,
@@ -77,11 +93,27 @@ const usePrivateChatStore = create((set, get) => ({
       }).sort((a, b) => new Date(b.latestMessage?.createdAt || 0) - new Date(a.latestMessage?.createdAt || 0));
 
       if (isForActiveChat) {
-        privateMessageService.markRead(message.senderId._id).catch(() => {});
+        privateMessageService.markRead(senderId).catch(() => {});
       }
 
-      return { messages: newMessages, users: newUsers };
+      return { messages: newMessages, users: newUsers, unreadTotal: getUnreadTotal(newUsers) };
     });
+  },
+
+  setChatPageOpen: (isOpen) => {
+    set((state) => {
+      if (!isOpen) return { isChatPageOpen: false };
+
+      const users = state.users.map((user) => ({ ...user, unreadCount: 0 }));
+      return { isChatPageOpen: true, users, unreadTotal: 0 };
+    });
+  },
+
+  clearUnreadTotal: () => {
+    set((state) => ({
+      users: state.users.map((user) => ({ ...user, unreadCount: 0 })),
+      unreadTotal: 0,
+    }));
   },
 
   markMessagesReadByOther: (readerId) => {

@@ -27,9 +27,12 @@ export default function RealtimeNotifications() {
       const senderName = message.senderId?.name || "New message";
       const senderId = message.senderId?._id || message.senderId;
       const preview = message.content || (message.attachments?.length ? "Attachment received" : "");
+      const isActiveChat = ["/private-chat", "/chats"].includes(location.pathname) && activeChatUser?._id === senderId;
 
-      if (!["/private-chat", "/chats"].includes(location.pathname) && (!activeChatUser || activeChatUser._id !== senderId)) {
-        receiveMessage(message);
+      receiveMessage(message);
+
+      if (isActiveChat) {
+        socket.emit("private_read", { senderId });
       }
 
       toast(

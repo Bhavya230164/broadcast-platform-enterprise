@@ -16,7 +16,7 @@ export default function PrivateChatPage() {
   const { socket, isConnected } = useSocket();
   const { 
     users, activeChatUser, messages, isLoadingUsers, isLoadingMessages, 
-    fetchUsers, setActiveChatUser, fetchMessages, sendMessage, receiveMessage, markMessagesReadByOther, updateUserStatus
+    fetchUsers, setActiveChatUser, sendMessage
   } = usePrivateChatStore();
   const { setCall } = useCallStore();
 
@@ -40,38 +40,16 @@ export default function PrivateChatPage() {
   useEffect(() => {
     if (!socket || !isConnected) return;
 
-    const handleReceiveMessage = (msg) => {
-      receiveMessage(msg);
-      // If it's for the active chat, mark as read
-      if (activeChatUser && msg.senderId._id === activeChatUser._id) {
-        socket.emit("private_read", { senderId: msg.senderId._id });
-      }
-    };
-
     const handlePrivateTyping = ({ senderId, isTyping }) => {
       if (activeChatUser && activeChatUser._id === senderId) {
         setRemoteTyping(isTyping);
       }
     };
 
-    const handleReadReceipt = ({ readerId }) => {
-      markMessagesReadByOther(readerId);
-    };
-
-    const handleUserStatus = ({ userId, isOnline, lastSeen }) => {
-      updateUserStatus({ userId, isOnline, lastSeen });
-    };
-
-    socket.on("receive_private_message", handleReceiveMessage);
     socket.on("private_typing", handlePrivateTyping);
-    socket.on("private_read_receipt", handleReadReceipt);
-    socket.on("user_status_change", handleUserStatus);
 
     return () => {
-      socket.off("receive_private_message", handleReceiveMessage);
       socket.off("private_typing", handlePrivateTyping);
-      socket.off("private_read_receipt", handleReadReceipt);
-      socket.off("user_status_change", handleUserStatus);
     };
   }, [socket, isConnected, activeChatUser]);
 
@@ -235,7 +213,9 @@ export default function PrivateChatPage() {
               <div className="text-center p-4 bg-white/50 dark:bg-black/20 rounded-lg mx-auto w-max text-sm">Loading messages...</div>
             ) : (
               messages.map((msg, idx) => {
-                const isMe = msg.senderId === user.id || msg.senderId._id === user.id;
+                const currentUserId = user?._id || user?.id;
+                const senderId = typeof msg.senderId === "string" ? msg.senderId : msg.senderId?._id || msg.senderId?.id;
+                const isMe = senderId === currentUserId;
                 return (
                   <div key={msg._id || idx} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
                     <div className={`relative max-w-[85%] md:max-w-[70%] rounded-lg px-3 py-1.5 shadow-sm ${
