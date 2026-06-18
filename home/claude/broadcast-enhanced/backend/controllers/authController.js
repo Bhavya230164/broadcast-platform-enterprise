@@ -199,41 +199,51 @@ export const disable2FA = async (req, res, next) => {
 export const forgotPassword = async (req, res, next) => {
   try {
     const { email } = validate(forgotPasswordSchema, req.body);
+
     const user = await User.findOne({ email });
-    // Always return success to prevent email enumeration
-    if (!user) return res.status(200).json({ success: true, message: "Password reset link has been sent to your email." });
+
+    if (!user) {
+      return res.status(200).json({
+        success: true,
+        message: "Password reset link has been sent to your email."
+      });
+    }
 
     const resetToken = crypto.randomBytes(32).toString("hex");
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    const expiresAt = new Date(
+      Date.now() + 60 * 60 * 1000
+    );
 
     await User.findByIdAndUpdate(user._id, {
       "passwordReset.token": resetToken,
       "passwordReset.expiresAt": expiresAt,
     });
 
-    // Log the reset token and URL for debugging
-    console.log(`[Auth] Password reset token generated for ${email}: ${resetToken}`); // Keep this line as it is
-    const resetUrl = `${process.env.CLIENT_ORIGIN}/reset-password?token=${resetToken}`;
-    try {
-      console.log("[AUTH] Sending reset email to:", email);
-      console.log("[AUTH] Reset URL:", resetUrl);
-      await sendEmail({
-        to: email,
-        subject: "Password Reset Request",
-        html: resetEmailHtml(user.name, resetUrl)
-      });
-      console.log("[AUTH] Email sent successfully");
-      return res.status(200).json({ success: true, message: "Password reset link has been sent to your email." });
-    } catch (mailError) {
-  console.error("[EMAIL FAILED]", mailError);
+    const resetUrl =
+      `${process.env.CLIENT_ORIGIN}/reset-password?token=${resetToken}`;
 
-  return res.status(500).json({
-    success: false,
-    message: "Failed to send password reset email. Please try again later."
-  });
-  } catch (err) { next(err); }
+    console.log("[AUTH] Sending reset email to:", email);
+    console.log("[AUTH] Reset URL:", resetUrl);
+
+    await sendEmail({
+      to: email,
+      subject: "Password Reset Request",
+      html: resetEmailHtml(user.name, resetUrl),
+    });
+
+    console.log("[AUTH] Email sent successfully");
+
+    return res.status(200).json({
+      success: true,
+      message: "Password reset link has been sent to your email."
+    });
+
+  } catch (err) {
+    console.error("[FORGOT PASSWORD ERROR]", err);
+    next(err);
+  }
 };
-
 // ── Reset Password ─────────────────────────────────────────────────────────────
 export const resetPassword = async (req, res, next) => {
   try {
