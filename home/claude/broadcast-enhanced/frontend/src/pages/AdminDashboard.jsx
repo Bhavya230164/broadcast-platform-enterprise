@@ -8,7 +8,9 @@ import toast from "react-hot-toast";
 import Navbar from "../components/layout/Navbar";
 import { groupService, messageService, meetingService, notificationService } from "../services/api";
 import { useSocket } from "../context/SocketContext";
-import { format, formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
+import { formatMeetingDate } from "../utils/meetingTime";
+import { getNotificationBody, getNotificationTimestamp } from "../utils/notificationTime";
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 const API_BASE = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
@@ -559,7 +561,7 @@ const MeetingsPanel = ({ meetings, onCancel }) => {
                 }`}>{m.status}</span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                📅 {format(new Date(m.scheduledAt), "MMM d, yyyy · h:mm a")} · {m.durationMinutes} min
+                📅 {formatMeetingDate(m.scheduledAt, "MMM d, yyyy · h:mm a")} · {m.durationMinutes} min
               </p>
               {m.groupId && <p className="text-xs text-slate-400 mt-0.5">Group: {m.groupId.name}</p>}
               {m.meetingLink && (
@@ -774,8 +776,8 @@ export default function AdminDashboard() {
                   <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${!n.isRead ? "bg-brand-500" : "bg-transparent"}`}/>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{n.title}</p>
-                    {n.body && <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{n.body}</p>}
-                    <p className="text-xs text-slate-400 mt-1">{formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })}</p>
+                    {getNotificationBody(n) && <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{getNotificationBody(n)}</p>}
+                    <p className="text-xs text-slate-400 mt-1">{getNotificationTimestamp(n)}</p>
                   </div>
                 </div>
               ))}

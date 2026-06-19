@@ -8,6 +8,7 @@ import { meetingService } from "../services/api";
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths, subMonths, isSameMonth, isSameDay, isPast } from "date-fns";
 import toast from "react-hot-toast";
 import useAuthStore from "../store/useAuthStore";
+import { formatMeetingDate, meetingDate, meetingDateKey } from "../utils/meetingTime";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -52,7 +53,7 @@ export default function CalendarPage() {
   // Map meetings by date key
   const meetingsByDate = {};
   meetings.forEach((m) => {
-    const key = format(new Date(m.scheduledAt), "yyyy-MM-dd");
+    const key = meetingDateKey(m.scheduledAt);
     if (!meetingsByDate[key]) meetingsByDate[key] = [];
     meetingsByDate[key].push(m);
   });
@@ -65,7 +66,7 @@ export default function CalendarPage() {
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900">
       <Navbar />
 
-      <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 pt-8 pb-24">
+      <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 pb-24 pt-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
@@ -141,7 +142,7 @@ export default function CalendarPage() {
                   const isCurrentMonth = isSameMonth(d, currentMonth);
                   const isToday = isSameDay(d, today);
                   const isSelected = selectedDate && isSameDay(d, selectedDate);
-                  const hasUpcoming = dayMeetings.some((m) => !isPast(new Date(m.scheduledAt)));
+                  const hasUpcoming = dayMeetings.some((m) => !isPast(meetingDate(m.scheduledAt)));
 
                   return (
                     <button
@@ -172,11 +173,10 @@ export default function CalendarPage() {
                           {dayMeetings.slice(0, 3).map((m, idx) => (
                             <span
                               key={idx}
-                              className={`w-1.5 h-1.5 rounded-full ${
-                                hasUpcoming
+                              className={`w-1.5 h-1.5 rounded-full ${hasUpcoming
                                   ? "bg-brand-500"
                                   : "bg-slate-300 dark:bg-slate-600"
-                              }`}
+                                }`}
                             />
                           ))}
                           {dayMeetings.length > 3 && (
@@ -214,22 +214,22 @@ export default function CalendarPage() {
                 ) : (
                   <div className="space-y-3">
                     {selectedMeetings.map((m) => {
-                      const isUpcoming = !isPast(new Date(m.scheduledAt));
+                      const scheduledAt = meetingDate(m.scheduledAt);
+                      const isUpcoming = !isPast(scheduledAt);
                       const platformIcon =
                         m.platform === "google_meet"
                           ? "🎥"
                           : m.platform === "zoom"
-                          ? "💻"
-                          : "📹";
+                            ? "💻"
+                            : "📹";
 
                       return (
                         <div
                           key={m._id}
-                          className={`card p-4 ${
-                            isUpcoming
+                          className={`card p-4 ${isUpcoming
                               ? "border-brand-200 dark:border-brand-800"
                               : "opacity-70"
-                          }`}
+                            }`}
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex-1 min-w-0">
@@ -250,7 +250,7 @@ export default function CalendarPage() {
                                 </p>
                               )}
                               <p className="text-xs text-slate-500 dark:text-slate-400">
-                                🕐 {format(new Date(m.scheduledAt), "h:mm a")}
+                                🕐 {formatMeetingDate(scheduledAt, "h:mm a")}
                                 <span className="ml-2 text-slate-400">
                                   · {m.durationMinutes} min
                                 </span>

@@ -3,6 +3,7 @@
  * Automatically attaches JWT, handles 401 expiry
  */
 import axios from "axios";
+import { localDateTimeInputToUtcIso } from "../utils/meetingTime";
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -87,11 +88,16 @@ export const messageService = {
 };
 
 // Meetings
+const normalizeMeetingWrite = (data) => {
+  if (!data?.scheduledAt) return data;
+  return { ...data, scheduledAt: localDateTimeInputToUtcIso(data.scheduledAt) };
+};
+
 export const meetingService = {
-  create: (d) => api.post("/meetings", d),
+  create: (d) => api.post("/meetings", normalizeMeetingWrite(d)),
   getAdminMeetings: () => api.get("/meetings/admin"),
   getMemberMeetings: () => api.get("/meetings/mine"),
-  update: (id, d) => api.patch(`/meetings/${id}`, d),
+  update: (id, d) => api.patch(`/meetings/${id}`, normalizeMeetingWrite(d)),
   cancel: (id) => api.delete(`/meetings/${id}`),
   join: (id) => api.post(`/meetings/${id}/join`),
   sendReminders: () => api.post("/meetings/reminders/send"),

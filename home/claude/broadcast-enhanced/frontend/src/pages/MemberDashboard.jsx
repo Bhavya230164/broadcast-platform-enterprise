@@ -13,13 +13,16 @@ import { useSocket } from "../context/SocketContext";
 import useAuthStore from "../store/useAuthStore";
 import { format, formatDistanceToNow, isPast } from "date-fns";
 import { Link } from "react-router-dom";
+import { formatMeetingDate, meetingDate } from "../utils/meetingTime";
+import { getNotificationBody, getNotificationTimestamp } from "../utils/notificationTime";
+
 
 const API_BASE = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
 
 const Spinner = () => (
   <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
   </svg>
 );
 
@@ -42,7 +45,7 @@ const AttachmentDisplay = ({ attachments }) => {
             <a key={i} href={`${API_BASE}${a.url}`} target="_blank" rel="noopener noreferrer"
               className="block rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 hover:opacity-90 transition-opacity">
               <img src={`${API_BASE}${a.url}`} alt={a.originalName}
-                className="h-28 w-40 object-cover"/>
+                className="h-28 w-40 object-cover" />
             </a>
           );
         }
@@ -76,19 +79,18 @@ const MessageCard = ({ message, isNew, onAcknowledge }) => {
 
   const borderColor = message.priority === "urgent" ? "border-l-red-500"
     : message.priority === "important" ? "border-l-amber-500"
-    : "border-l-transparent";
+      : "border-l-transparent";
 
   return (
-    <div className={`card p-4 border-l-4 ${borderColor} animate-slide-up transition-all hover:shadow-sm ${
-      isNew ? "ring-1 ring-brand-300 dark:ring-brand-700" : ""
-    }`}>
+    <div className={`card p-4 border-l-4 ${borderColor} animate-slide-up transition-all hover:shadow-sm ${isNew ? "ring-1 ring-brand-300 dark:ring-brand-700" : ""
+      }`}>
       {/* Header row */}
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex items-center gap-2 flex-wrap">
           <span className={message.type === "broadcast" ? "badge-broadcast" : "badge-selective"}>
             {message.type === "broadcast" ? "📢 Broadcast" : "✉️ Direct"}
           </span>
-          <PriorityBadge priority={message.priority}/>
+          <PriorityBadge priority={message.priority} />
           {message.isPinned && (
             <span className="badge bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">📌 Pinned</span>
           )}
@@ -110,20 +112,20 @@ const MessageCard = ({ message, isNew, onAcknowledge }) => {
       )}
 
       {/* Attachments */}
-      <AttachmentDisplay attachments={message.attachments}/>
+      <AttachmentDisplay attachments={message.attachments} />
 
       {/* Footer: status + ack button */}
       <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 dark:border-slate-700">
         <div className="flex items-center gap-3 text-xs text-slate-400">
           {message.deliveredAt && (
             <span className="flex items-center gap-1">
-              <svg className="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/></svg>
+              <svg className="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
               Delivered
             </span>
           )}
           {message.readAt && (
             <span className="flex items-center gap-1 text-brand-500">
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7M5 13l4 4L19 7"/></svg>
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7M5 13l4 4L19 7" /></svg>
               Read
             </span>
           )}
@@ -136,7 +138,7 @@ const MessageCard = ({ message, isNew, onAcknowledge }) => {
         {!message.acknowledgedAt && (
           <button onClick={handleAck} disabled={acking}
             className="btn-secondary btn-sm text-xs">
-            {acking ? <Spinner/> : "✓ I Have Read"}
+            {acking ? <Spinner /> : "✓ I Have Read"}
           </button>
         )}
       </div>
@@ -146,7 +148,8 @@ const MessageCard = ({ message, isNew, onAcknowledge }) => {
 
 // ── Meeting card ───────────────────────────────────────────────────────────────
 const MeetingCard = ({ meeting, onJoin }) => {
-  const isUpcoming = !isPast(new Date(meeting.scheduledAt));
+  const scheduledAt = meetingDate(meeting.scheduledAt);
+  const isUpcoming = !isPast(scheduledAt);
   const platformIcon = meeting.platform === "google_meet" ? "🎥" : meeting.platform === "zoom" ? "💻" : "📹";
 
   return (
@@ -164,7 +167,7 @@ const MeetingCard = ({ meeting, onJoin }) => {
             <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">{meeting.description}</p>
           )}
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            📅 {format(new Date(meeting.scheduledAt), "MMM d, yyyy · h:mm a")}
+            📅 {formatMeetingDate(scheduledAt, "MMM d, yyyy · h:mm a")}
             <span className="ml-2 text-slate-400">· {meeting.durationMinutes} min</span>
           </p>
           {meeting.groupName && (
@@ -186,7 +189,7 @@ const MeetingCard = ({ meeting, onJoin }) => {
       </div>
       {!isUpcoming && (
         <p className="text-xs text-slate-400 mt-2 italic">
-          Ended {formatDistanceToNow(new Date(meeting.scheduledAt), { addSuffix: true })}
+          Ended {formatDistanceToNow(scheduledAt, { addSuffix: true })}
         </p>
       )}
     </div>
@@ -241,21 +244,21 @@ export default function MemberDashboard({ initialTab = "inbox" }) {
     try {
       const { data } = await messageService.getPinned();
       setPinnedMessages(data.messages);
-    } catch {}
+    } catch { }
   }, []);
 
   const fetchMeetings = useCallback(async () => {
     try {
       const { data } = await meetingService.getMemberMeetings();
       setMeetings(data.meetings);
-    } catch {}
+    } catch { }
   }, []);
 
   const fetchNotifications = useCallback(async () => {
     try {
       const { data } = await notificationService.getAll({ limit: 20 });
       setNotifications(data.notifications);
-    } catch {}
+    } catch { }
   }, []);
 
   useEffect(() => {
@@ -370,7 +373,7 @@ export default function MemberDashboard({ initialTab = "inbox" }) {
     try {
       await meetingService.join(meetingId);
       setMeetings((p) => p.map((m) => m._id === meetingId ? { ...m, hasJoined: true } : m));
-    } catch {}
+    } catch { }
   };
 
   const handleMarkAllRead = async () => {
@@ -378,25 +381,25 @@ export default function MemberDashboard({ initialTab = "inbox" }) {
       await notificationService.markAllRead();
       setNotifications((p) => p.map((n) => ({ ...n, isRead: true })));
       toast.success("All read.");
-    } catch {}
+    } catch { }
   };
 
-  const upcomingMeetings = meetings.filter((m) => !isPast(new Date(m.scheduledAt)));
-  const pastMeetings = meetings.filter((m) => isPast(new Date(m.scheduledAt)));
+  const upcomingMeetings = meetings.filter((m) => !isPast(meetingDate(m.scheduledAt)));
+  const pastMeetings = meetings.filter((m) => isPast(meetingDate(m.scheduledAt)));
   const unreadNotifCount = notifications.filter((n) => !n.isRead).length;
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900">
       <Navbar />
 
-      <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 pt-8 pb-24">
+      <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 pb-24 pt-6">
         {/* Greeting */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
             Good day, {user?.name?.split(" ")[0]}.
           </h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 flex items-center gap-2">
-            <span className={`w-2 h-2 rounded-full ${isConnected ? "bg-emerald-500" : "bg-slate-400"}`}/>
+            <span className={`w-2 h-2 rounded-full ${isConnected ? "bg-emerald-500" : "bg-slate-400"}`} />
             {isConnected ? "Connected — messages arrive in real-time" : "Offline — reconnecting…"}
           </p>
         </div>
@@ -420,9 +423,8 @@ export default function MemberDashboard({ initialTab = "inbox" }) {
         <div className="flex gap-1 mb-6 border-b border-slate-200 dark:border-slate-700">
           {["inbox", "pinned", "notifications"].map((t) => (
             <button key={t} onClick={() => setActiveTab(t)}
-              className={`px-4 py-2 text-sm font-medium capitalize border-b-2 -mb-px transition-colors ${
-                activeTab === t ? "border-brand-500 text-brand-600 dark:text-brand-400" : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-              }`}>
+              className={`px-4 py-2 text-sm font-medium capitalize border-b-2 -mb-px transition-colors ${activeTab === t ? "border-brand-500 text-brand-600 dark:text-brand-400" : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                }`}>
               {t}
               {t === "notifications" && unreadNotifCount > 0 && (
                 <span className="ml-1.5 px-1.5 py-0.5 text-[10px] font-bold bg-red-500 text-white rounded-full">{unreadNotifCount}</span>
@@ -439,13 +441,12 @@ export default function MemberDashboard({ initialTab = "inbox" }) {
               <p className="section-title">Filter:</p>
               {["all", "urgent", "important", "normal"].map((f) => (
                 <button key={f} onClick={() => setPriorityFilter(f)}
-                  className={`px-3 py-1 text-xs font-medium rounded-full border capitalize transition-all ${
-                    priorityFilter === f
+                  className={`px-3 py-1 text-xs font-medium rounded-full border capitalize transition-all ${priorityFilter === f
                       ? f === "urgent" ? "bg-red-500 text-white border-red-500"
                         : f === "important" ? "bg-amber-500 text-white border-amber-500"
-                        : "bg-slate-800 text-white border-slate-800 dark:bg-slate-200 dark:text-slate-800"
+                          : "bg-slate-800 text-white border-slate-800 dark:bg-slate-200 dark:text-slate-800"
                       : "border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-300"
-                  }`}>
+                    }`}>
                   {f === "all" ? "All" : f}
                 </button>
               ))}
@@ -453,13 +454,13 @@ export default function MemberDashboard({ initialTab = "inbox" }) {
 
             {loadingMessages ? (
               <div className="text-center py-16 text-slate-400 text-sm flex items-center justify-center gap-2">
-                <Spinner/> Loading inbox…
+                <Spinner /> Loading inbox…
               </div>
             ) : messages.length === 0 ? (
               <div className="text-center py-16">
                 <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-3">
                   <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                   </svg>
                 </div>
                 <p className="text-slate-600 dark:text-slate-400 font-medium">Inbox is empty</p>
@@ -468,13 +469,13 @@ export default function MemberDashboard({ initialTab = "inbox" }) {
             ) : (
               <div className="space-y-3">
                 {messages.map((m) => (
-                  <MessageCard key={m._id} message={m} isNew={newIds.has(m._id)} onAcknowledge={handleAcknowledge}/>
+                  <MessageCard key={m._id} message={m} isNew={newIds.has(m._id)} onAcknowledge={handleAcknowledge} />
                 ))}
                 {pagination.page < pagination.pages && (
                   <div className="text-center pt-2">
                     <button onClick={() => fetchMessages(pagination.page + 1, false)} disabled={loadingMore}
                       className="btn-secondary btn-sm">
-                      {loadingMore ? <><Spinner/> Loading…</> : "Load older messages"}
+                      {loadingMore ? <><Spinner /> Loading…</> : "Load older messages"}
                     </button>
                   </div>
                 )}
@@ -492,7 +493,7 @@ export default function MemberDashboard({ initialTab = "inbox" }) {
                 No pinned messages yet.
               </div>
             ) : pinnedMessages.map((m) => (
-              <MessageCard key={m._id} message={m} isNew={false} onAcknowledge={handleAcknowledge}/>
+              <MessageCard key={m._id} message={m} isNew={false} onAcknowledge={handleAcknowledge} />
             ))}
           </div>
         )}
@@ -505,7 +506,7 @@ export default function MemberDashboard({ initialTab = "inbox" }) {
                 <p className="section-title mb-3">Upcoming</p>
                 <div className="space-y-3">
                   {upcomingMeetings.map((m) => (
-                    <MeetingCard key={m._id} meeting={m} onJoin={handleJoinMeeting}/>
+                    <MeetingCard key={m._id} meeting={m} onJoin={handleJoinMeeting} />
                   ))}
                 </div>
               </div>
@@ -515,7 +516,7 @@ export default function MemberDashboard({ initialTab = "inbox" }) {
                 <p className="section-title mb-3">Past</p>
                 <div className="space-y-3">
                   {pastMeetings.map((m) => (
-                    <MeetingCard key={m._id} meeting={m} onJoin={handleJoinMeeting}/>
+                    <MeetingCard key={m._id} meeting={m} onJoin={handleJoinMeeting} />
                   ))}
                 </div>
               </div>
@@ -546,19 +547,18 @@ export default function MemberDashboard({ initialTab = "inbox" }) {
                 </div>
               ) : notifications.map((n) => (
                 <div key={n._id}
-                  className={`card p-4 flex items-start gap-3 animate-fade-in ${
-                    !n.isRead ? "border-brand-200 dark:border-brand-800 bg-brand-50/30 dark:bg-brand-900/10" : ""
-                  }`}>
-                  <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${!n.isRead ? "bg-brand-500" : "bg-transparent"}`}/>
+                  className={`card p-4 flex items-start gap-3 animate-fade-in ${!n.isRead ? "border-brand-200 dark:border-brand-800 bg-brand-50/30 dark:bg-brand-900/10" : ""
+                    }`}>
+                  <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${!n.isRead ? "bg-brand-500" : "bg-transparent"}`} />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{n.title}</p>
-                    {n.body && <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{n.body}</p>}
+                    {getNotificationBody(n) && <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{getNotificationBody(n)}</p>}
                     {n.metadata?.meetingLink && (
                       <a href={n.metadata.meetingLink} target="_blank" rel="noopener noreferrer"
                         className="text-xs text-brand-500 hover:underline mt-1 block">Join meeting →</a>
                     )}
                     <p className="text-xs text-slate-400 mt-1">
-                      {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })}
+                      {getNotificationTimestamp(n)}
                     </p>
                   </div>
                   <button onClick={async () => {
@@ -574,6 +574,6 @@ export default function MemberDashboard({ initialTab = "inbox" }) {
         )}
       </main>
     </div>
-    
+
   );
 }

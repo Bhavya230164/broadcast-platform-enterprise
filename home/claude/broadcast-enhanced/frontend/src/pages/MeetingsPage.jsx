@@ -9,18 +9,20 @@ import Navbar from "../components/layout/Navbar";
 import { meetingService } from "../services/api";
 import { useSocket } from "../context/SocketContext";
 import useAuthStore from "../store/useAuthStore";
-import { format, formatDistanceToNow, isPast } from "date-fns";
+import { formatDistanceToNow, isPast } from "date-fns";
+import { formatMeetingDate, meetingDate } from "../utils/meetingTime";
 
 const Spinner = () => (
   <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
   </svg>
 );
 
 // ── Meeting card ───────────────────────────────────────────────────────────────
 const MeetingCard = ({ meeting, onJoin }) => {
-  const isUpcoming = !isPast(new Date(meeting.scheduledAt));
+  const scheduledAt = meetingDate(meeting.scheduledAt);
+  const isUpcoming = !isPast(scheduledAt);
   const platformIcon = meeting.platform === "google_meet" ? "🎥" : meeting.platform === "zoom" ? "💻" : "📹";
 
   return (
@@ -30,12 +32,11 @@ const MeetingCard = ({ meeting, onJoin }) => {
           <div className="flex items-center gap-2 flex-wrap mb-1.5">
             <span className="text-lg">{platformIcon}</span>
             <h3 className="font-semibold text-slate-900 dark:text-white truncate">{meeting.title}</h3>
-            <span className={`badge text-[10px] ${
-              meeting.status === "cancelled" ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400" :
-              meeting.status === "completed" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" :
-              isUpcoming ? "bg-brand-100 text-brand-700 dark:bg-brand-900/30 dark:text-brand-400" :
-              "bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400"
-            }`}>
+            <span className={`badge text-[10px] ${meeting.status === "cancelled" ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400" :
+                meeting.status === "completed" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" :
+                  isUpcoming ? "bg-brand-100 text-brand-700 dark:bg-brand-900/30 dark:text-brand-400" :
+                    "bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400"
+              }`}>
               {meeting.status === "cancelled" ? "Cancelled" : meeting.status === "completed" ? "Completed" : isUpcoming ? "Upcoming" : "Past"}
             </span>
             {meeting.hasJoined && (
@@ -47,10 +48,10 @@ const MeetingCard = ({ meeting, onJoin }) => {
           )}
           <div className="flex items-center gap-3 flex-wrap text-xs text-slate-700 dark:text-slate-300">
             <span className="flex items-center gap-1">
-              📅 {format(new Date(meeting.scheduledAt), "EEEE, MMM d, yyyy")}
+              📅 {formatMeetingDate(scheduledAt, "EEEE, MMM d, yyyy")}
             </span>
             <span className="flex items-center gap-1">
-              🕐 {format(new Date(meeting.scheduledAt), "h:mm a")}
+              🕐 {formatMeetingDate(scheduledAt, "h:mm a")}
             </span>
             <span>⏱ {meeting.durationMinutes} min</span>
           </div>
@@ -61,7 +62,7 @@ const MeetingCard = ({ meeting, onJoin }) => {
           )}
           {!isUpcoming && (
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 italic">
-              Ended {formatDistanceToNow(new Date(meeting.scheduledAt), { addSuffix: true })}
+              Ended {formatDistanceToNow(scheduledAt, { addSuffix: true })}
             </p>
           )}
         </div>
@@ -161,7 +162,7 @@ export default function MeetingsPage() {
     try {
       await meetingService.join(meetingId);
       setMeetings((p) => p.map((m) => m._id === meetingId ? { ...m, hasJoined: true } : m));
-    } catch {}
+    } catch { }
   };
 
   const handleCancelMeeting = async (meetingId) => {
@@ -176,18 +177,18 @@ export default function MeetingsPage() {
   };
 
   // Filter meetings
-  const upcomingMeetings = meetings.filter((m) => !isPast(new Date(m.scheduledAt)) && m.status !== "cancelled");
-  const pastMeetings = meetings.filter((m) => isPast(new Date(m.scheduledAt)) || m.status === "cancelled");
+  const upcomingMeetings = meetings.filter((m) => !isPast(meetingDate(m.scheduledAt)) && m.status !== "cancelled");
+  const pastMeetings = meetings.filter((m) => isPast(meetingDate(m.scheduledAt)) || m.status === "cancelled");
 
   const displayMeetings = filter === "upcoming" ? upcomingMeetings
     : filter === "past" ? pastMeetings
-    : meetings;
+      : meetings;
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900">
       <Navbar />
 
-      <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 pt-8 pb-24">
+      <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 pb-24 pt-6">
         {/* Header */}
         <div className="flex items-start justify-between mb-8 flex-wrap gap-4">
           <div>
@@ -219,11 +220,10 @@ export default function MeetingsPage() {
           <p className="section-title">Filter:</p>
           {["all", "upcoming", "past"].map((f) => (
             <button key={f} onClick={() => setFilter(f)}
-              className={`px-3 py-1 text-xs font-medium rounded-full border capitalize transition-all ${
-                filter === f
+              className={`px-3 py-1 text-xs font-medium rounded-full border capitalize transition-all ${filter === f
                   ? "bg-slate-800 text-white border-slate-800 dark:bg-slate-200 dark:text-slate-800"
                   : "border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-slate-300"
-              }`}>
+                }`}>
               {f === "all" ? "All Meetings" : f}
             </button>
           ))}
